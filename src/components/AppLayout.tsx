@@ -1,4 +1,4 @@
-import { Outlet } from "@tanstack/react-router";
+import { Outlet, useRouterState } from "@tanstack/react-router";
 import { useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
@@ -7,6 +7,7 @@ import { Menu, X } from "lucide-react";
 
 export function AppLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const path = useRouterState({ select: (s) => s.location.pathname });
 
   return (
     <div className="min-h-screen bg-background">
@@ -41,7 +42,7 @@ export function AppLayout() {
 
       <div className="md:ml-60 flex flex-col min-h-screen">
         <TopBar />
-        <main key={location.pathname} className="flex-1 p-4 md:p-6 animate-fade-in">
+        <main key={path} className="flex-1 p-4 md:p-6 animate-fade-in">
           <Outlet />
         </main>
       </div>
