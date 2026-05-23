@@ -1,4 +1,5 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link as RouterLink, useRouterState } from "@tanstack/react-router";
+const Link = RouterLink as any;
 import {
   LayoutDashboard, Calendar, Users, Receipt, FlaskConical, Package, Settings,
   Stethoscope,
