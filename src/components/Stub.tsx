@@ -1,7 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { Construction } from "lucide-react";
 
-function Stub({ title }: { title: string }) {
+export function Stub({ title }: { title: string }) {
   return (
     <div className="max-w-[1400px] mx-auto">
       <h2 className="text-2xl font-bold text-navy mb-1">{title}</h2>
@@ -18,5 +17,3 @@ function Stub({ title }: { title: string }) {
     </div>
   );
 }
-
-export const stub = (title: string) => () => <Stub title={title} />;
