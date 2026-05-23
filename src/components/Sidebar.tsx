@@ -34,7 +34,7 @@ export function Sidebar() {
           return (
             <Link
               key={item.to}
-              to={item.to as string}
+              to={item.to}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors relative ${
                 active
                   ? "bg-[#E1F5EE] text-primary"
