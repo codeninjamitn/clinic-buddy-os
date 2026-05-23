@@ -4,7 +4,7 @@ import {
   Stethoscope,
 } from "lucide-react";
 
-const nav = [
+const nav: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/appointments", label: "Appointments", icon: Calendar },
   { to: "/patients", label: "Patients", icon: Users },
@@ -12,7 +12,7 @@ const nav = [
   { to: "/lab-reports", label: "Lab Reports", icon: FlaskConical },
   { to: "/inventory", label: "Inventory", icon: Package },
   { to: "/settings", label: "Settings", icon: Settings },
-] as const;
+];
 
 export function Sidebar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
