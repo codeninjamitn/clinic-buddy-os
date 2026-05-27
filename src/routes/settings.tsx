@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useClinic } from "@/lib/auth";
@@ -12,6 +12,8 @@ export const Route = createFileRoute("/settings")({ component: SettingsPage });
 function SettingsPage() {
   const { clinic, refresh } = useClinic();
   const { can } = useRole();
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [staff, setStaff] = useState<Staff[]>([]);
   const [addOpen, setAddOpen] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
@@ -47,6 +49,27 @@ function SettingsPage() {
     refresh();
   };
 
+  const onPickLogo = () => fileRef.current?.click();
+
+  const onLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !clinic) return;
+    if (!file.type.startsWith("image/")) return toast.error("Please select an image file");
+    if (file.size > 2 * 1024 * 1024) return toast.error("Logo must be under 2 MB");
+    setUploadingLogo(true);
+    const ext = file.name.split(".").pop() || "png";
+    const path = `${clinic.id}/logo-${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage.from("clinic-logos").upload(path, file, { upsert: true, contentType: file.type });
+    if (upErr) { setUploadingLogo(false); return toast.error(upErr.message); }
+    const { data } = supabase.storage.from("clinic-logos").getPublicUrl(path);
+    const { error: dbErr } = await supabase.from("clinics").update({ logo_url: data.publicUrl }).eq("id", clinic.id);
+    setUploadingLogo(false);
+    if (dbErr) return toast.error(dbErr.message);
+    toast.success("Logo updated");
+    refresh();
+  };
+
   const toggle = async (s: Staff) => {
     const { error } = await supabase.from("staff").update({ is_active: !s.is_active }).eq("id", s.id);
     if (error) return toast.error(error.message);
@@ -77,10 +100,24 @@ function SettingsPage() {
         <div className="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-6">
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-2">Logo</label>
-            <button className="w-32 h-32 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors">
-              <Upload className="w-6 h-6 mb-1" />
-              <span className="text-xs">Upload logo</span>
+            <button
+              type="button"
+              onClick={onPickLogo}
+              disabled={uploadingLogo}
+              className="w-32 h-32 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors overflow-hidden disabled:opacity-60"
+            >
+              {clinic?.logo_url ? (
+                <img src={clinic.logo_url} alt="Clinic logo" className="w-full h-full object-contain" />
+              ) : uploadingLogo ? (
+                <Loader2 className="w-6 h-6 animate-spin" />
+              ) : (
+                <>
+                  <Upload className="w-6 h-6 mb-1" />
+                  <span className="text-xs">Upload logo</span>
+                </>
+              )}
             </button>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onLogoChange} />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field label="Clinic Name" value={name} onChange={setName} />
