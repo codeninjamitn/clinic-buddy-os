@@ -360,6 +360,7 @@ export type Database = {
           name: string
           phone: string | null
           role: string | null
+          user_id: string | null
         }
         Insert: {
           clinic_id?: string | null
@@ -370,6 +371,7 @@ export type Database = {
           name: string
           phone?: string | null
           role?: string | null
+          user_id?: string | null
         }
         Update: {
           clinic_id?: string | null
@@ -380,6 +382,7 @@ export type Database = {
           name?: string
           phone?: string | null
           role?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -396,7 +399,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      current_clinic_id: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never
