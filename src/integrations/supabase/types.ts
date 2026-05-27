@@ -85,6 +85,7 @@ export type Database = {
           created_at: string | null
           gst_number: string | null
           id: string
+          logo_url: string | null
           name: string
           phone: string | null
         }
@@ -94,6 +95,7 @@ export type Database = {
           created_at?: string | null
           gst_number?: string | null
           id?: string
+          logo_url?: string | null
           name: string
           phone?: string | null
         }
@@ -103,6 +105,7 @@ export type Database = {
           created_at?: string | null
           gst_number?: string | null
           id?: string
+          logo_url?: string | null
           name?: string
           phone?: string | null
         }
