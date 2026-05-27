@@ -3,11 +3,13 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useClinic, initials } from "@/lib/auth";
 import { useModals } from "@/lib/modals";
+import { useRole } from "@/context/RoleContext";
 
 export function TopBar() {
   const { clinic } = useClinic();
   const { user } = useAuth();
   const { open: openModal } = useModals();
+  const { can, role, staffName } = useRole();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -29,12 +31,14 @@ export function TopBar() {
         <p className="text-xs text-muted-foreground">Bengaluru · KA</p>
       </div>
       <div className="flex items-center gap-3">
-        <button
-          onClick={() => openModal("book-appointment")}
-          className="hidden sm:inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white text-sm font-medium px-3.5 py-2 rounded-md transition-colors"
-        >
-          <Calendar className="w-4 h-4" /> Book Appointment
-        </button>
+        {can("book_appointment") && (
+          <button
+            onClick={() => openModal("book-appointment")}
+            className="hidden sm:inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white text-sm font-medium px-3.5 py-2 rounded-md transition-colors"
+          >
+            <Calendar className="w-4 h-4" /> Book Appointment
+          </button>
+        )}
         <button className="relative w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center">
           <Bell className="w-5 h-5 text-navy" />
           <span className="absolute top-2 right-2.5 w-2 h-2 rounded-full bg-danger ring-2 ring-white" />
@@ -42,8 +46,8 @@ export function TopBar() {
         <div className="relative" ref={ref}>
           <button onClick={() => setOpen((o) => !o)} className="flex items-center gap-2.5">
             <div className="text-right hidden sm:block">
-              <div className="text-sm font-semibold text-navy leading-tight">Dr. Ramaiah</div>
-              <div className="text-[11px] text-muted-foreground leading-tight">{user?.email ?? "Signed in"}</div>
+              <div className="text-sm font-semibold text-navy leading-tight">{staffName || "User"}</div>
+              <div className="text-[11px] text-muted-foreground leading-tight">{role ?? user?.email ?? "Signed in"}</div>
             </div>
             <div className="w-10 h-10 rounded-full bg-primary text-white font-semibold flex items-center justify-center text-sm">
               {initLabel || "DR"}
