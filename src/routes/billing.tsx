@@ -47,7 +47,7 @@ function BillingPage() {
       supabase.from("invoices").select("total").eq("clinic_id", clinicId).eq("status", "Pending"),
       supabase.from("invoices").select("total").eq("clinic_id", clinicId).eq("status", "Overdue"),
     ]);
-    setInvoices((list.data as Invoice[]) ?? []);
+    setInvoices((list.data as unknown as Invoice[]) ?? []);
     const sum = (arr: any[] | null) => (arr ?? []).reduce((s, r) => s + Number(r.total || 0), 0);
     setTotals({ paid: sum(paid.data), pending: sum(pending.data), overdue: sum(overdue.data) });
     setLoading(false);
