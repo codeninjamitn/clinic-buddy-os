@@ -350,8 +350,77 @@ export type Database = {
           },
         ]
       }
+      prescriptions: {
+        Row: {
+          appointment_id: string | null
+          clinic_id: string | null
+          created_at: string | null
+          diagnosis: string | null
+          doctor_id: string | null
+          follow_up_date: string | null
+          id: string
+          medicines: Json | null
+          notes: string | null
+          patient_id: string | null
+        }
+        Insert: {
+          appointment_id?: string | null
+          clinic_id?: string | null
+          created_at?: string | null
+          diagnosis?: string | null
+          doctor_id?: string | null
+          follow_up_date?: string | null
+          id?: string
+          medicines?: Json | null
+          notes?: string | null
+          patient_id?: string | null
+        }
+        Update: {
+          appointment_id?: string | null
+          clinic_id?: string | null
+          created_at?: string | null
+          diagnosis?: string | null
+          doctor_id?: string | null
+          follow_up_date?: string | null
+          id?: string
+          medicines?: Json | null
+          notes?: string | null
+          patient_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prescriptions_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prescriptions_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prescriptions_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prescriptions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       staff: {
         Row: {
+          auth_user_id: string | null
           clinic_id: string | null
           created_at: string | null
           email: string | null
@@ -363,6 +432,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          auth_user_id?: string | null
           clinic_id?: string | null
           created_at?: string | null
           email?: string | null
@@ -374,6 +444,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          auth_user_id?: string | null
           clinic_id?: string | null
           created_at?: string | null
           email?: string | null
@@ -400,6 +471,7 @@ export type Database = {
     }
     Functions: {
       current_clinic_id: { Args: never; Returns: string }
+      get_current_staff_role: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never
