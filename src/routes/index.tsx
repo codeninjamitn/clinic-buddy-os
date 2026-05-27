@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   useClinic, todayISO, startOfMonthISO, endOfMonthISO, initials as initialsOf, colorFor, formatINR,
 } from "@/lib/auth";
+import { useModals } from "@/lib/modals";
 import type { Appointment, ApptStatus } from "@/types/database";
 
 export const Route = createFileRoute("/")({ component: Dashboard });
@@ -23,6 +24,7 @@ const statusStyles: Record<string, string> = {
 
 function Dashboard() {
   const { clinic } = useClinic();
+  const { open: openModal, version } = useModals();
   const clinicId = clinic?.id;
 
   const [loading, setLoading] = useState(true);
@@ -89,7 +91,7 @@ function Dashboard() {
     }
   };
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [clinicId]);
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [clinicId, version]);
 
   useEffect(() => {
     if (!clinicId) return;
