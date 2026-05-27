@@ -100,10 +100,24 @@ function SettingsPage() {
         <div className="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-6">
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-2">Logo</label>
-            <button className="w-32 h-32 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors">
-              <Upload className="w-6 h-6 mb-1" />
-              <span className="text-xs">Upload logo</span>
+            <button
+              type="button"
+              onClick={onPickLogo}
+              disabled={uploadingLogo}
+              className="w-32 h-32 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors overflow-hidden disabled:opacity-60"
+            >
+              {clinic?.logo_url ? (
+                <img src={clinic.logo_url} alt="Clinic logo" className="w-full h-full object-contain" />
+              ) : uploadingLogo ? (
+                <Loader2 className="w-6 h-6 animate-spin" />
+              ) : (
+                <>
+                  <Upload className="w-6 h-6 mb-1" />
+                  <span className="text-xs">Upload logo</span>
+                </>
+              )}
             </button>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onLogoChange} />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field label="Clinic Name" value={name} onChange={setName} />
