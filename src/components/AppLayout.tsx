@@ -6,8 +6,11 @@ import { Toaster } from "@/components/ui/sonner";
 import { Menu, X, Loader2 } from "lucide-react";
 import { AuthProvider, ClinicProvider, useAuth } from "@/lib/auth";
 import { ModalsProvider } from "@/lib/modals";
-import { RoleProvider } from "@/context/RoleContext";
+import { RoleProvider, useRole } from "@/context/RoleContext";
+import { SuperAdminProvider, useSuperAdmin } from "@/context/SuperAdminContext";
 import { LoginScreen } from "./LoginScreen";
+import { SuperAdminShell } from "./superadmin/SuperAdminShell";
+import { SuperAdminBanner } from "./superadmin/SuperAdminBanner";
 
 export function AppLayout() {
   return (
@@ -29,12 +32,38 @@ function AuthGate() {
   }
   if (!session) return <LoginScreen />;
   return (
-    <ClinicProvider>
-      <RoleProvider>
-        <ModalsProvider>
-          <Shell />
-        </ModalsProvider>
-      </RoleProvider>
+    <RoleProvider>
+      <SuperAdminProvider>
+        <RoleRouter />
+      </SuperAdminProvider>
+    </RoleProvider>
+  );
+}
+
+function RoleRouter() {
+  const { isSuperAdmin, loading } = useRole();
+  const { activeSuperAdminClinicId } = useSuperAdmin();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Super Admin without a selected clinic → super admin shell
+  if (isSuperAdmin && !activeSuperAdminClinicId) {
+    return <SuperAdminShell />;
+  }
+
+  // Normal users (or super admin viewing a specific clinic)
+  return (
+    <ClinicProvider clinicId={activeSuperAdminClinicId ?? undefined}>
+      <ModalsProvider>
+        {isSuperAdmin && activeSuperAdminClinicId && <SuperAdminBanner />}
+        <Shell />
+      </ModalsProvider>
     </ClinicProvider>
   );
 }

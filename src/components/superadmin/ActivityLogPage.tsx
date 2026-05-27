@@ -53,7 +53,7 @@ export function ActivityLogPage() {
             <tbody>
               {(log.data?.rows ?? []).map((r) => (
                 <tr key={r.id} style={{ borderTop: "1px solid #1A4055" }}>
-                  <td className="px-4 py-3" style={{ color: "#7FBBC5" }}>{new Date(r.created_at).toLocaleString()}</td>
+                  <td className="px-4 py-3" style={{ color: "#7FBBC5" }}>{new Date(r.created_at ?? "").toLocaleString()}</td>
                   <td className="px-4 py-3"><span className="px-2 py-0.5 rounded-full text-[10px] font-bold" style={saActionBadge(r.action)}>{r.action.replace("clinic_", "")}</span></td>
                   <td className="px-4 py-3 font-semibold">{r.clinic_name ?? "—"}</td>
                   <td className="px-4 py-3 text-[12px]" style={{ color: "#7FBBC5" }}>{JSON.stringify(r.metadata ?? {})}</td>

@@ -79,17 +79,21 @@ export const useAuth = () => useContext(AuthContext);
 interface ClinicCtx { clinic: Clinic | null; loading: boolean; refresh: () => Promise<void> }
 const ClinicContext = createContext<ClinicCtx>({ clinic: null, loading: true, refresh: async () => {} });
 
-export function ClinicProvider({ children }: { children: ReactNode }) {
+export function ClinicProvider({ children, clinicId }: { children: ReactNode; clinicId?: string | null }) {
   const [clinic, setClinic] = useState<Clinic | null>(null);
   const [loading, setLoading] = useState(true);
 
   const refresh = async () => {
-    const { data } = await supabase.from("clinics").select("*").limit(1).maybeSingle();
+    setLoading(true);
+    const q = supabase.from("clinics").select("*");
+    const { data } = clinicId
+      ? await q.eq("id", clinicId).maybeSingle()
+      : await q.limit(1).maybeSingle();
     setClinic((data as Clinic) ?? null);
     setLoading(false);
   };
 
-  useEffect(() => { refresh(); }, []);
+  useEffect(() => { refresh(); /* eslint-disable-next-line */ }, [clinicId]);
 
   return <ClinicContext.Provider value={{ clinic, loading, refresh }}>{children}</ClinicContext.Provider>;
 }

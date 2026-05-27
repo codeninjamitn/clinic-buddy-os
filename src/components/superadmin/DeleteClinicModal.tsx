@@ -16,7 +16,7 @@ export function DeleteClinicModal({ clinic, onClose }: { clinic: SAClinic; onClo
     setBusy(true);
     try {
       await del({ data: { id: clinic.id } });
-      toast.success("SAClinic deleted");
+      toast.success("Clinic deleted");
       onClose(true);
     } catch (e) { toast.error((e as Error).message); setBusy(false); }
   };
