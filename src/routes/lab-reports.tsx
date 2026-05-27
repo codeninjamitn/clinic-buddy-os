@@ -3,8 +3,9 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useClinic } from "@/lib/auth";
-import type { LabReport, LabStatus, Patient } from "@/types/database";
-import { Upload, FileText, MessageCircle, Download, FlaskConical, X, Loader2 } from "lucide-react";
+import { useModals } from "@/lib/modals";
+import type { LabReport, LabStatus } from "@/types/database";
+import { Upload, FileText, MessageCircle, Download, FlaskConical } from "lucide-react";
 
 export const Route = createFileRoute("/lab-reports")({ component: LabReportsPage });
 
@@ -19,11 +20,11 @@ function badge(s: LabStatus) {
 
 function LabReportsPage() {
   const { clinic } = useClinic();
+  const { open: openModal, version } = useModals();
   const clinicId = clinic?.id;
   const [drag, setDrag] = useState(false);
   const [reports, setReports] = useState<LabReport[]>([]);
   const [loading, setLoading] = useState(true);
-  const [pendingFile, setPendingFile] = useState<File | null>(null);
 
   const load = async () => {
     if (!clinicId) return;
@@ -35,12 +36,12 @@ function LabReportsPage() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [clinicId]);
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [clinicId, version]);
 
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault(); setDrag(false);
     const file = e.dataTransfer.files?.[0];
-    if (file) setPendingFile(file);
+    if (file) openModal("upload-lab-report", { file });
   };
 
   const pending = reports.filter((r) => r.status !== "Delivered");
@@ -61,7 +62,7 @@ function LabReportsPage() {
           drag ? "border-primary bg-[#E1F5EE]" : "border-primary/40 bg-white hover:bg-[#E1F5EE]/40"
         }`}
       >
-        <input type="file" accept=".pdf,image/*" className="hidden" onChange={(e) => e.target.files?.[0] && setPendingFile(e.target.files[0])} />
+        <input type="file" accept=".pdf,image/*" className="hidden" onChange={(e) => e.target.files?.[0] && openModal("upload-lab-report", { file: e.target.files[0] })} />
         <Upload className="w-10 h-10 text-primary mx-auto mb-2" />
         <div className="text-sm font-semibold text-navy">Drop PDF or image here, or click to browse</div>
         <div className="text-xs text-muted-foreground mt-1">Supports PDF, JPG, PNG up to 10 MB</div>
