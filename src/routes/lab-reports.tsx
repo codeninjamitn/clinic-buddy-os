@@ -125,9 +125,14 @@ function LabReportsPage() {
                   <button onClick={() => toast.success(`Report sent to ${r.patients?.name} on WhatsApp`)} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md bg-primary text-white text-xs font-semibold hover:bg-primary/90">
                     <MessageCircle className="w-3.5 h-3.5" /> Send on WhatsApp
                   </button>
-                  <a href={r.file_url ?? "#"} target="_blank" rel="noreferrer" className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md bg-muted text-navy text-xs font-semibold hover:bg-muted/70">
+                  <button onClick={async () => {
+                    if (!r.file_url) return;
+                    const { data, error } = await supabase.storage.from("lab-reports").createSignedUrl(r.file_url, 60);
+                    if (error || !data) { toast.error("Could not generate download link"); return; }
+                    window.open(data.signedUrl, "_blank", "noreferrer");
+                  }} className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md bg-muted text-navy text-xs font-semibold hover:bg-muted/70">
                     <Download className="w-3.5 h-3.5" /> Download PDF
-                  </a>
+                  </button>
                 </div>
               </div>
             ))}
