@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
-import { Eye, Download, Plus, X, Trash2, MessageCircle, Loader2 } from "lucide-react";
+import { Eye, Download, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useClinic, formatINR, initials as initialsOf } from "@/lib/auth";
-import type { Invoice, InvoiceStatus, Patient, Staff } from "@/types/database";
+import { useModals } from "@/lib/modals";
+import type { Invoice, InvoiceStatus } from "@/types/database";
 
 export const Route = createFileRoute("/billing")({ component: BillingPage });
 
@@ -30,10 +30,10 @@ function methodBadge(m: string | null) {
 
 function BillingPage() {
   const { clinic } = useClinic();
+  const { open: openModal, version } = useModals();
   const clinicId = clinic?.id;
 
   const [tab, setTab] = useState<"invoices" | "payments">("invoices");
-  const [modalOpen, setModalOpen] = useState(false);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [totals, setTotals] = useState({ paid: 0, pending: 0, overdue: 0 });
@@ -53,7 +53,7 @@ function BillingPage() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [clinicId]);
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [clinicId, version]);
 
   const totalBilled = totals.paid + totals.pending + totals.overdue;
   const payments = invoices.filter(i => i.status === "Paid").slice(0, 20);
@@ -65,7 +65,7 @@ function BillingPage() {
           <h2 className="text-2xl font-bold text-navy">Billing</h2>
           <p className="text-sm text-muted-foreground">Invoices, payments and collections</p>
         </div>
-        <button onClick={() => setModalOpen(true)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90 active:bg-primary/80 transition-colors">
+        <button onClick={() => openModal("create-invoice")} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90 active:bg-primary/80 transition-colors">
           <Plus className="w-4 h-4" /> Create Invoice
         </button>
       </div>
