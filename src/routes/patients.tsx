@@ -1,9 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
-import { Search, Eye, Pencil, UserPlus } from "lucide-react";
-import { patients } from "@/lib/mockData";
-import type { Patient } from "@/lib/mockData";
+import { useState, useEffect } from "react";
+import { Search, Eye, Pencil, UserPlus, X, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useClinic, initials as initialsOf, colorFor, ageFromDob } from "@/lib/auth";
 import { PatientDrawer } from "@/components/PatientDrawer";
+import type { Patient } from "@/types/database";
 
 export const Route = createFileRoute("/patients")({ component: PatientsPage });
 
@@ -11,22 +13,40 @@ const filters = ["All", "Active", "Inactive"] as const;
 type Filter = (typeof filters)[number];
 
 function PatientsPage() {
+  const { clinic } = useClinic();
+  const clinicId = clinic?.id;
   const [q, setQ] = useState("");
+  const [debounced, setDebounced] = useState("");
   const [filter, setFilter] = useState<Filter>("All");
   const [selected, setSelected] = useState<Patient | null>(null);
+  const [rows, setRows] = useState<Patient[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [addOpen, setAddOpen] = useState(false);
 
-  const rows = useMemo(() => {
-    const term = q.trim().toLowerCase();
-    return patients.filter((p) => {
-      if (filter !== "All" && p.status !== filter) return false;
-      if (!term) return true;
-      return (
-        p.name.toLowerCase().includes(term) ||
-        p.phone.replace(/\s/g, "").includes(term.replace(/\s/g, "")) ||
-        p.id.toLowerCase().includes(term)
-      );
-    });
-  }, [q, filter]);
+  useEffect(() => {
+    const t = setTimeout(() => setDebounced(q), 300);
+    return () => clearTimeout(t);
+  }, [q]);
+
+  const load = async () => {
+    if (!clinicId) return;
+    setLoading(true); setError(null);
+    let query = supabase.from("patients").select("*").eq("clinic_id", clinicId).order("created_at", { ascending: false });
+    if (debounced.trim()) query = query.ilike("name", `%${debounced.trim()}%`);
+    const { data, error } = await query;
+    if (error) setError(error.message);
+    else setRows((data as Patient[]) ?? []);
+    setLoading(false);
+  };
+
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [clinicId, debounced]);
+
+  const filtered = rows.filter((p) => {
+    if (filter === "Active") return p.is_active;
+    if (filter === "Inactive") return !p.is_active;
+    return true;
+  });
 
   return (
     <div className="space-y-5 max-w-[1400px] mx-auto">
@@ -34,10 +54,13 @@ function PatientsPage() {
         <div>
           <h2 className="text-2xl font-bold text-navy">Patients</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {patients.length} total · {patients.filter((p) => p.status === "Active").length} active
+            {rows.length} total · {rows.filter((p) => p.is_active).length} active
           </p>
         </div>
-        <button className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors">
+        <button
+          onClick={() => setAddOpen(true)}
+          className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors"
+        >
           <UserPlus className="w-4 h-4" /> Add Patient
         </button>
       </div>
@@ -49,7 +72,7 @@ function PatientsPage() {
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
-              placeholder="Search patients by name, phone, or ID..."
+              placeholder="Search patients by name..."
               className="w-full pl-9 pr-3 py-2.5 text-sm rounded-md border border-border bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
             />
           </div>
@@ -70,6 +93,13 @@ function PatientsPage() {
           </div>
         </div>
 
+        {error && (
+          <div className="text-sm bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md flex justify-between items-center">
+            <span>{error}</span>
+            <button onClick={load} className="text-xs font-semibold underline">Retry</button>
+          </div>
+        )}
+
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -78,67 +108,74 @@ function PatientsPage() {
                 <th className="py-3 pr-4 font-semibold">Name</th>
                 <th className="py-3 pr-4 font-semibold">Age / Gender</th>
                 <th className="py-3 pr-4 font-semibold">Phone</th>
-                <th className="py-3 pr-4 font-semibold">Last Visit</th>
+                <th className="py-3 pr-4 font-semibold">Created</th>
                 <th className="py-3 pr-4 font-semibold">Status</th>
                 <th className="py-3 font-semibold text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((p) => (
-                <tr key={p.id} className="border-b border-border last:border-0 hover:bg-[#F4FAFB]">
-                  <td className="py-3 pr-4 font-mono text-xs text-muted-foreground">{p.id}</td>
-                  <td className="py-3 pr-4">
-                    <div className="flex items-center gap-2.5">
-                      <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-semibold shrink-0"
-                        style={{ backgroundColor: p.color }}
-                      >
-                        {p.initials}
-                      </div>
-                      <span className="font-medium text-navy">{p.name}</span>
-                    </div>
-                  </td>
-                  <td className="py-3 pr-4 text-muted-foreground">
-                    {p.age} · {p.gender}
-                  </td>
-                  <td className="py-3 pr-4 text-navy tabular-nums">{p.phone}</td>
-                  <td className="py-3 pr-4 text-muted-foreground tabular-nums">{p.lastVisit}</td>
-                  <td className="py-3 pr-4">
-                    <span
-                      className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${
-                        p.status === "Active"
-                          ? "bg-[#E1F5EE] text-primary"
-                          : "bg-gray-100 text-gray-500"
-                      }`}
-                    >
-                      {p.status}
-                    </span>
-                  </td>
-                  <td className="py-3 text-right">
-                    <div className="inline-flex items-center gap-1">
-                      <button
-                        onClick={() => setSelected(p)}
-                        className="p-2 rounded-md hover:bg-[#E1F5EE] text-muted-foreground hover:text-primary transition-colors"
-                        title="View"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                      <button
-                        className="p-2 rounded-md hover:bg-[#E1F5EE] text-muted-foreground hover:text-primary transition-colors"
-                        title="Edit"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {rows.length === 0 && (
+              {loading ? (
+                [...Array(6)].map((_, i) => (
+                  <tr key={i} className="border-b border-border">
+                    <td colSpan={7} className="py-3"><div className="h-8 bg-muted rounded animate-pulse" /></td>
+                  </tr>
+                ))
+              ) : filtered.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-10 text-center text-sm text-muted-foreground">
                     No patients match your search.
                   </td>
                 </tr>
+              ) : (
+                filtered.map((p) => (
+                  <tr key={p.id} className="border-b border-border last:border-0 hover:bg-[#F4FAFB]">
+                    <td className="py-3 pr-4 font-mono text-xs text-muted-foreground">{p.id.slice(0, 8)}</td>
+                    <td className="py-3 pr-4">
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-white text-[11px] font-semibold shrink-0"
+                          style={{ backgroundColor: colorFor(p.name) }}
+                        >
+                          {initialsOf(p.name)}
+                        </div>
+                        <span className="font-medium text-navy">{p.name}</span>
+                      </div>
+                    </td>
+                    <td className="py-3 pr-4 text-muted-foreground">
+                      {ageFromDob(p.dob)} · {p.gender ?? "—"}
+                    </td>
+                    <td className="py-3 pr-4 text-navy tabular-nums">{p.phone}</td>
+                    <td className="py-3 pr-4 text-muted-foreground tabular-nums">
+                      {new Date(p.created_at).toLocaleDateString("en-IN")}
+                    </td>
+                    <td className="py-3 pr-4">
+                      <span
+                        className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${
+                          p.is_active ? "bg-[#E1F5EE] text-primary" : "bg-gray-100 text-gray-500"
+                        }`}
+                      >
+                        {p.is_active ? "Active" : "Inactive"}
+                      </span>
+                    </td>
+                    <td className="py-3 text-right">
+                      <div className="inline-flex items-center gap-1">
+                        <button
+                          onClick={() => setSelected(p)}
+                          className="p-2 rounded-md hover:bg-[#E1F5EE] text-muted-foreground hover:text-primary transition-colors"
+                          title="View"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          className="p-2 rounded-md hover:bg-[#E1F5EE] text-muted-foreground hover:text-primary transition-colors"
+                          title="Edit"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>
@@ -146,6 +183,90 @@ function PatientsPage() {
       </div>
 
       <PatientDrawer patient={selected} onClose={() => setSelected(null)} />
+      {addOpen && <AddPatientModal clinicId={clinicId!} onClose={() => setAddOpen(false)} onSaved={() => { setAddOpen(false); load(); }} />}
+    </div>
+  );
+}
+
+function AddPatientModal({ clinicId, onClose, onSaved }: { clinicId: string; onClose: () => void; onSaved: () => void }) {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [dob, setDob] = useState("");
+  const [gender, setGender] = useState<"Male" | "Female" | "Other">("Male");
+  const [bloodGroup, setBloodGroup] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
+  const [allergies, setAllergies] = useState("");
+  const [emergencyName, setEmergencyName] = useState("");
+  const [emergencyPhone, setEmergencyPhone] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const submit = async () => {
+    if (!name.trim() || !phone.trim()) { toast.error("Name and phone are required"); return; }
+    setSaving(true);
+    const { error } = await supabase.from("patients").insert({
+      clinic_id: clinicId, name, phone,
+      dob: dob || null, gender, blood_group: bloodGroup || null,
+      email: email || null, address: address || null,
+      known_allergies: allergies || null,
+      emergency_contact_name: emergencyName || null,
+      emergency_contact_phone: emergencyPhone || null,
+    });
+    setSaving(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Patient added");
+    onSaved();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
+      <div className="bg-white rounded-xl w-full max-w-lg p-6 animate-scale-in max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-navy">Add Patient</h3>
+          <button onClick={onClose} className="p-1 hover:bg-muted rounded"><X className="w-5 h-5" /></button>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Name *" value={name} onChange={setName} className="col-span-2" />
+          <Field label="Phone *" value={phone} onChange={setPhone} placeholder="+91 ..." />
+          <Field label="Date of birth" type="date" value={dob} onChange={setDob} />
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Gender</label>
+            <select value={gender} onChange={(e) => setGender(e.target.value as any)} className="w-full px-3 py-2 text-sm rounded-md border border-border bg-white">
+              <option>Male</option><option>Female</option><option>Other</option>
+            </select>
+          </div>
+          <Field label="Blood group" value={bloodGroup} onChange={setBloodGroup} placeholder="O+" />
+          <Field label="Email" value={email} onChange={setEmail} className="col-span-2" />
+          <Field label="Address" value={address} onChange={setAddress} className="col-span-2" />
+          <Field label="Known allergies" value={allergies} onChange={setAllergies} className="col-span-2" />
+          <Field label="Emergency contact name" value={emergencyName} onChange={setEmergencyName} />
+          <Field label="Emergency phone" value={emergencyPhone} onChange={setEmergencyPhone} />
+        </div>
+        <button
+          onClick={submit}
+          disabled={saving}
+          className="mt-5 w-full py-2.5 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90 disabled:opacity-60 inline-flex items-center justify-center gap-2"
+        >
+          {saving && <Loader2 className="w-4 h-4 animate-spin" />} Save Patient
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, value, onChange, type = "text", placeholder, className = "" }: {
+  label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string; className?: string;
+}) {
+  return (
+    <div className={className}>
+      <label className="block text-xs font-medium text-muted-foreground mb-1">{label}</label>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full px-3 py-2 text-sm rounded-md border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
+      />
     </div>
   );
 }
