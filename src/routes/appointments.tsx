@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Search, Calendar as CalIcon, Clock, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useClinic, startOfWeek, isoDate } from "@/lib/auth";
+import { useRole } from "@/context/RoleContext";
 import type { Appointment, Patient, Staff, ApptStatus, ApptType } from "@/types/database";
 
 export const Route = createFileRoute("/appointments")({ component: AppointmentsPage });
@@ -22,6 +23,7 @@ function statusColor(s: ApptStatus) {
 
 function AppointmentsPage() {
   const { clinic } = useClinic();
+  const { can } = useRole();
   const clinicId = clinic?.id;
 
   const [view, setView] = useState<"month" | "week" | "day">("week");
@@ -126,7 +128,8 @@ function AppointmentsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-5">
+      <div className={`grid grid-cols-1 ${can("book_appointment") ? "lg:grid-cols-[280px_1fr]" : ""} gap-5`}>
+        {can("book_appointment") && (
         <form onSubmit={submit} className="card-surface p-5 space-y-4 h-fit">
           <h3 className="text-sm font-semibold text-navy">Book Appointment</h3>
 
@@ -211,6 +214,7 @@ function AppointmentsPage() {
             {saving && <Loader2 className="w-4 h-4 animate-spin" />} Confirm Booking
           </button>
         </form>
+        )}
 
         <div className="card-surface overflow-hidden">
           <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border bg-muted/40">

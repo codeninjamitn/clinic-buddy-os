@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useClinic } from "@/lib/auth";
 import { useModals } from "@/lib/modals";
+import { useRole } from "@/context/RoleContext";
 import type { LabReport, LabStatus } from "@/types/database";
 import { Upload, FileText, MessageCircle, Download, FlaskConical } from "lucide-react";
 
@@ -21,6 +22,7 @@ function badge(s: LabStatus) {
 function LabReportsPage() {
   const { clinic } = useClinic();
   const { open: openModal, version } = useModals();
+  const { can } = useRole();
   const clinicId = clinic?.id;
   const [drag, setDrag] = useState(false);
   const [reports, setReports] = useState<LabReport[]>([]);
@@ -54,19 +56,21 @@ function LabReportsPage() {
         <p className="text-sm text-muted-foreground">Upload and deliver diagnostic reports</p>
       </div>
 
-      <label
-        onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
-        onDragLeave={() => setDrag(false)}
-        onDrop={onDrop}
-        className={`mb-5 block rounded-xl border-2 border-dashed p-8 text-center transition-colors cursor-pointer ${
-          drag ? "border-primary bg-[#E1F5EE]" : "border-primary/40 bg-white hover:bg-[#E1F5EE]/40"
-        }`}
-      >
-        <input type="file" accept=".pdf,image/*" className="hidden" onChange={(e) => e.target.files?.[0] && openModal("upload-lab-report", { file: e.target.files[0] })} />
-        <Upload className="w-10 h-10 text-primary mx-auto mb-2" />
-        <div className="text-sm font-semibold text-navy">Drop PDF or image here, or click to browse</div>
-        <div className="text-xs text-muted-foreground mt-1">Supports PDF, JPG, PNG up to 10 MB</div>
-      </label>
+      {can("upload_lab_report") && (
+        <label
+          onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
+          onDragLeave={() => setDrag(false)}
+          onDrop={onDrop}
+          className={`mb-5 block rounded-xl border-2 border-dashed p-8 text-center transition-colors cursor-pointer ${
+            drag ? "border-primary bg-[#E1F5EE]" : "border-primary/40 bg-white hover:bg-[#E1F5EE]/40"
+          }`}
+        >
+          <input type="file" accept=".pdf,image/*" className="hidden" onChange={(e) => e.target.files?.[0] && openModal("upload-lab-report", { file: e.target.files[0] })} />
+          <Upload className="w-10 h-10 text-primary mx-auto mb-2" />
+          <div className="text-sm font-semibold text-navy">Drop PDF or image here, or click to browse</div>
+          <div className="text-xs text-muted-foreground mt-1">Supports PDF, JPG, PNG up to 10 MB</div>
+        </label>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <div className="card-surface">
