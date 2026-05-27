@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { X, Phone, Mail, MapPin, AlertTriangle, Pill, Calendar } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ageFromDob, colorFor, initials as initialsOf, formatINR } from "@/lib/auth";
+import { useModals } from "@/lib/modals";
 import type { Patient, Appointment, Invoice } from "@/types/database";
 
 type Tab = "Overview" | "Visit History" | "Prescriptions" | "Billing";
@@ -11,6 +12,7 @@ export function PatientDrawer({ patient, onClose }: { patient: Patient | null; o
   const [visits, setVisits] = useState<Appointment[]>([]);
   const [bills, setBills] = useState<Invoice[]>([]);
   const [loadingTab, setLoadingTab] = useState(false);
+  const { open: openModal } = useModals();
 
   useEffect(() => {
     if (patient) setTab("Overview");
@@ -187,7 +189,13 @@ export function PatientDrawer({ patient, onClose }: { patient: Patient | null; o
             </div>
 
             <div className="p-5 border-t border-border">
-              <button className="w-full bg-primary hover:bg-primary/90 text-white font-medium text-sm py-2.5 rounded-md inline-flex items-center justify-center gap-2 transition-colors">
+              <button
+                onClick={() => {
+                  openModal("book-appointment", { patientId: patient.id, patientName: patient.name });
+                  onClose();
+                }}
+                className="w-full bg-primary hover:bg-primary/90 text-white font-medium text-sm py-2.5 rounded-md inline-flex items-center justify-center gap-2 transition-colors"
+              >
                 <Calendar className="w-4 h-4" /> Book Appointment
               </button>
             </div>

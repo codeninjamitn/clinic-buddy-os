@@ -223,15 +223,16 @@ function Dashboard() {
           <section className="card-surface p-5">
             <h3 className="font-semibold text-navy">Quick Actions</h3>
             <div className="grid grid-cols-2 gap-3 mt-4">
-              {[
-                { label: "New Appointment", Icon: Calendar },
-                { label: "Add Patient", Icon: UserPlus },
-                { label: "Create Invoice", Icon: FileText },
-                { label: "Upload Lab Report", Icon: FlaskConical },
-              ].map((q) => (
+              {([
+                { label: "New Appointment", Icon: Calendar, modal: "book-appointment" as const },
+                { label: "Add Patient", Icon: UserPlus, modal: "new-patient" as const },
+                { label: "Create Invoice", Icon: FileText, modal: "create-invoice" as const },
+                { label: "Upload Lab Report", Icon: FlaskConical, modal: "upload-lab-report" as const },
+              ]).map((q) => (
                 <button
                   key={q.label}
-                  className="border border-border rounded-lg p-3 flex flex-col items-start gap-2 hover:border-primary hover:bg-[#E1F5EE]/40 transition-colors text-left"
+                  onClick={() => openModal(q.modal)}
+                  className="border border-border rounded-lg p-3 flex flex-col items-start gap-2 hover:border-primary hover:bg-[#E1F5EE]/40 cursor-pointer active:scale-[0.97] transition-all duration-150 text-left"
                 >
                   <div className="w-9 h-9 rounded-md bg-[#E1F5EE] flex items-center justify-center">
                     <q.Icon className="w-4.5 h-4.5 text-primary" />
