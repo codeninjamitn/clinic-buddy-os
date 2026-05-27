@@ -14,6 +14,7 @@ export interface Clinic {
   gst_number: string | null;
   abdm_connected: boolean;
   created_at: string;
+  logo_url: string | null;
 }
 
 export interface Staff {
