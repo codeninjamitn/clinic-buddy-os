@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { Menu, X, Loader2 } from "lucide-react";
 import { AuthProvider, ClinicProvider, useAuth } from "@/lib/auth";
 import { ModalsProvider } from "@/lib/modals";
+import { RoleProvider } from "@/context/RoleContext";
 import { LoginScreen } from "./LoginScreen";
 
 export function AppLayout() {
@@ -29,9 +30,11 @@ function AuthGate() {
   if (!session) return <LoginScreen />;
   return (
     <ClinicProvider>
-      <ModalsProvider>
-        <Shell />
-      </ModalsProvider>
+      <RoleProvider>
+        <ModalsProvider>
+          <Shell />
+        </ModalsProvider>
+      </RoleProvider>
     </ClinicProvider>
   );
 }

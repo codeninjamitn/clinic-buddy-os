@@ -3,13 +3,15 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useClinic } from "@/lib/auth";
+import { useRole } from "@/context/RoleContext";
 import type { Staff, Role } from "@/types/database";
-import { Upload, Plus, CheckCircle2, X, Loader2 } from "lucide-react";
+import { Upload, Plus, CheckCircle2, X, Loader2, Lock } from "lucide-react";
 
 export const Route = createFileRoute("/settings")({ component: SettingsPage });
 
 function SettingsPage() {
   const { clinic, refresh } = useClinic();
+  const { can } = useRole();
   const [staff, setStaff] = useState<Staff[]>([]);
   const [addOpen, setAddOpen] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
@@ -50,6 +52,18 @@ function SettingsPage() {
     if (error) return toast.error(error.message);
     loadStaff();
   };
+
+  if (!can("access_settings")) {
+    return (
+      <div className="max-w-[1100px] mx-auto animate-fade-in">
+        <div className="card-surface p-10 text-center">
+          <Lock className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+          <h2 className="text-lg font-semibold text-navy">No access</h2>
+          <p className="text-sm text-muted-foreground mt-1">Your role doesn't have permission to view Settings.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-[1100px] mx-auto animate-fade-in space-y-6">

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useClinic, formatINR } from "@/lib/auth";
+import { useRole } from "@/context/RoleContext";
 import type { InventoryItem } from "@/types/database";
 import { Plus, FileText, Pencil, X, AlertTriangle, Clock, Package, Loader2 } from "lucide-react";
 
@@ -10,6 +11,7 @@ export const Route = createFileRoute("/inventory")({ component: InventoryPage })
 
 function InventoryPage() {
   const { clinic } = useClinic();
+  const { can } = useRole();
   const clinicId = clinic?.id;
   const [addOpen, setAddOpen] = useState(false);
   const [items, setItems] = useState<InventoryItem[]>([]);
@@ -39,12 +41,16 @@ function InventoryPage() {
           <p className="text-sm text-muted-foreground">Pharmacy stock and expiry tracking</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => toast.success("Purchase order generated")} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md border border-border bg-white text-navy text-sm font-semibold hover:bg-muted">
-            <FileText className="w-4 h-4" /> Generate Purchase Order
-          </button>
-          <button onClick={() => setAddOpen(true)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90">
-            <Plus className="w-4 h-4" /> Add Medicine
-          </button>
+          {can("edit_inventory") && (
+            <>
+              <button onClick={() => toast.success("Purchase order generated")} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md border border-border bg-white text-navy text-sm font-semibold hover:bg-muted">
+                <FileText className="w-4 h-4" /> Generate Purchase Order
+              </button>
+              <button onClick={() => setAddOpen(true)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90">
+                <Plus className="w-4 h-4" /> Add Medicine
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -98,7 +104,9 @@ function InventoryPage() {
                   <td className="px-4 py-3 text-muted-foreground">{m.reorder_level}</td>
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-1">
-                      <button className="p-1.5 rounded hover:bg-muted"><Pencil className="w-4 h-4 text-muted-foreground" /></button>
+                      {can("edit_inventory") && (
+                        <button className="p-1.5 rounded hover:bg-muted"><Pencil className="w-4 h-4 text-muted-foreground" /></button>
+                      )}
                     </div>
                   </td>
                 </tr>
