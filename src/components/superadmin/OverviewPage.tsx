@@ -24,10 +24,10 @@ export function OverviewPage({ onAdd }: { onAdd: () => void }) {
   const metrics = useQuery({ queryKey: ["sa-metrics"], queryFn: () => fetchMetrics(), refetchOnWindowFocus: false });
   const list = useQuery({ queryKey: ["sa-clinics"], queryFn: () => fetchList(), refetchOnWindowFocus: false });
 
-  const toggle = async (c: SASAClinic & { status?: string }) => {
+  const toggle = async (c: SAClinic & { status?: string }) => {
     const next = c.status === "active" ? "suspended" : "active";
     await updateStatus({ data: { id: c.id, status: next as "active" | "suspended" } });
-    toast.success(`SAClinic ${next}`);
+    toast.success(`Clinic ${next}`);
     metrics.refetch(); list.refetch();
   };
   const onEnter = async (c: SAClinic) => {
@@ -43,7 +43,7 @@ export function OverviewPage({ onAdd }: { onAdd: () => void }) {
           <p className="text-[13px]" style={{ color: "#7FBBC5" }}>Manage every clinic on ClinicOS</p>
         </div>
         <button onClick={onAdd} className="px-4 py-2 rounded-md text-[13px] font-semibold inline-flex items-center gap-2" style={{ background: "#02C39A", color: "#0A2535" }}>
-          + Add New SAClinic
+          + Add New Clinic
         </button>
       </div>
 
@@ -88,7 +88,7 @@ export function OverviewPage({ onAdd }: { onAdd: () => void }) {
                   </div>
                   <div className="flex gap-2 mt-4">
                     <button onClick={() => onEnter(c)} className="flex-1 px-3 py-2 rounded-md text-[12px] font-semibold inline-flex items-center justify-center gap-1.5" style={{ background: "#02C39A", color: "#0A2535" }}>
-                      <Building2 className="w-3.5 h-3.5" /> Enter SAClinic
+                      <Building2 className="w-3.5 h-3.5" /> Enter Clinic
                     </button>
                     <button onClick={() => setEditing(c)} className="w-9 h-9 rounded-md flex items-center justify-center hover:bg-white/5" style={{ border: "1px solid #1A4055", color: "#7FBBC5" }} aria-label="Edit">
                       <Pencil className="w-3.5 h-3.5" />

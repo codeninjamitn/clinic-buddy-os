@@ -43,10 +43,10 @@ export function AllClinicsPage({ onAdd }: { onAdd: () => void }) {
     await logEnter({ data: { id: c.id } });
     enterClinic(c.id, c.name);
   };
-  const onSuspend = async (c: SASAClinic & { status?: string }) => {
+  const onSuspend = async (c: SAClinic & { status?: string }) => {
     const next = c.status === "active" ? "suspended" : "active";
     await updateStatus({ data: { id: c.id, status: next as "active" | "suspended" } });
-    toast.success(`SAClinic ${next}`);
+    toast.success(`Clinic ${next}`);
     list.refetch(); setOpenMenu(null);
   };
 
@@ -58,7 +58,7 @@ export function AllClinicsPage({ onAdd }: { onAdd: () => void }) {
           <p className="text-[13px]" style={{ color: "#7FBBC5" }}>Browse, search and manage every clinic.</p>
         </div>
         <button onClick={onAdd} className="px-4 py-2 rounded-md text-[13px] font-semibold inline-flex items-center gap-2" style={{ background: "#02C39A", color: "#0A2535" }}>
-          <PlusCircle className="w-4 h-4" /> Add New SAClinic
+          <PlusCircle className="w-4 h-4" /> Add New Clinic
         </button>
       </div>
 
@@ -91,7 +91,7 @@ export function AllClinicsPage({ onAdd }: { onAdd: () => void }) {
           <table className="w-full text-[13px]">
             <thead>
               <tr style={{ background: "#0A2535", color: "#7FBBC5" }}>
-                <Th>SAClinic Name</Th><Th>City</Th><Th>Plan</Th><Th>Status</Th>
+                <Th>Clinic Name</Th><Th>City</Th><Th>Plan</Th><Th>Status</Th>
                 <Th>Patients</Th><Th>Staff</Th><Th>Created</Th><Th className="text-right">Actions</Th>
               </tr>
             </thead>
