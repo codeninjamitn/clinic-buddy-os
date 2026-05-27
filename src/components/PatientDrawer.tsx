@@ -33,7 +33,7 @@ export function PatientDrawer({ patient, onClose }: { patient: Patient | null; o
       supabase.from("invoices").select("*")
         .eq("patient_id", patient.id)
         .order("created_at", { ascending: false })
-        .then(({ data }) => { setBills((data as Invoice[]) ?? []); setLoadingTab(false); });
+        .then(({ data }) => { setBills((data as unknown as Invoice[]) ?? []); setLoadingTab(false); });
     }
   }, [tab, patient]);
 
