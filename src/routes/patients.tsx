@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { Search, Eye, Pencil, UserPlus, X, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { Search, Eye, Pencil, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useClinic, initials as initialsOf, colorFor, ageFromDob } from "@/lib/auth";
+import { useModals } from "@/lib/modals";
 import { PatientDrawer } from "@/components/PatientDrawer";
 import type { Patient } from "@/types/database";
 
@@ -14,6 +14,7 @@ type Filter = (typeof filters)[number];
 
 function PatientsPage() {
   const { clinic } = useClinic();
+  const { open: openModal, version } = useModals();
   const clinicId = clinic?.id;
   const [q, setQ] = useState("");
   const [debounced, setDebounced] = useState("");
@@ -22,7 +23,6 @@ function PatientsPage() {
   const [rows, setRows] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [addOpen, setAddOpen] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(q), 300);
@@ -40,7 +40,7 @@ function PatientsPage() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [clinicId, debounced]);
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [clinicId, debounced, version]);
 
   const filtered = rows.filter((p) => {
     if (filter === "Active") return p.is_active;
@@ -58,7 +58,7 @@ function PatientsPage() {
           </p>
         </div>
         <button
-          onClick={() => setAddOpen(true)}
+          onClick={() => openModal("new-patient")}
           className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors"
         >
           <UserPlus className="w-4 h-4" /> Add Patient
@@ -183,90 +183,6 @@ function PatientsPage() {
       </div>
 
       <PatientDrawer patient={selected} onClose={() => setSelected(null)} />
-      {addOpen && <AddPatientModal clinicId={clinicId!} onClose={() => setAddOpen(false)} onSaved={() => { setAddOpen(false); load(); }} />}
-    </div>
-  );
-}
-
-function AddPatientModal({ clinicId, onClose, onSaved }: { clinicId: string; onClose: () => void; onSaved: () => void }) {
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [dob, setDob] = useState("");
-  const [gender, setGender] = useState<"Male" | "Female" | "Other">("Male");
-  const [bloodGroup, setBloodGroup] = useState("");
-  const [email, setEmail] = useState("");
-  const [address, setAddress] = useState("");
-  const [allergies, setAllergies] = useState("");
-  const [emergencyName, setEmergencyName] = useState("");
-  const [emergencyPhone, setEmergencyPhone] = useState("");
-  const [saving, setSaving] = useState(false);
-
-  const submit = async () => {
-    if (!name.trim() || !phone.trim()) { toast.error("Name and phone are required"); return; }
-    setSaving(true);
-    const { error } = await supabase.from("patients").insert({
-      clinic_id: clinicId, name, phone,
-      dob: dob || null, gender, blood_group: bloodGroup || null,
-      email: email || null, address: address || null,
-      known_allergies: allergies || null,
-      emergency_contact_name: emergencyName || null,
-      emergency_contact_phone: emergencyPhone || null,
-    });
-    setSaving(false);
-    if (error) { toast.error(error.message); return; }
-    toast.success("Patient added");
-    onSaved();
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
-      <div className="bg-white rounded-xl w-full max-w-lg p-6 animate-scale-in max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-navy">Add Patient</h3>
-          <button onClick={onClose} className="p-1 hover:bg-muted rounded"><X className="w-5 h-5" /></button>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Name *" value={name} onChange={setName} className="col-span-2" />
-          <Field label="Phone *" value={phone} onChange={setPhone} placeholder="+91 ..." />
-          <Field label="Date of birth" type="date" value={dob} onChange={setDob} />
-          <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">Gender</label>
-            <select value={gender} onChange={(e) => setGender(e.target.value as any)} className="w-full px-3 py-2 text-sm rounded-md border border-border bg-white">
-              <option>Male</option><option>Female</option><option>Other</option>
-            </select>
-          </div>
-          <Field label="Blood group" value={bloodGroup} onChange={setBloodGroup} placeholder="O+" />
-          <Field label="Email" value={email} onChange={setEmail} className="col-span-2" />
-          <Field label="Address" value={address} onChange={setAddress} className="col-span-2" />
-          <Field label="Known allergies" value={allergies} onChange={setAllergies} className="col-span-2" />
-          <Field label="Emergency contact name" value={emergencyName} onChange={setEmergencyName} />
-          <Field label="Emergency phone" value={emergencyPhone} onChange={setEmergencyPhone} />
-        </div>
-        <button
-          onClick={submit}
-          disabled={saving}
-          className="mt-5 w-full py-2.5 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90 disabled:opacity-60 inline-flex items-center justify-center gap-2"
-        >
-          {saving && <Loader2 className="w-4 h-4 animate-spin" />} Save Patient
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function Field({ label, value, onChange, type = "text", placeholder, className = "" }: {
-  label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string; className?: string;
-}) {
-  return (
-    <div className={className}>
-      <label className="block text-xs font-medium text-muted-foreground mb-1">{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full px-3 py-2 text-sm rounded-md border border-border focus:outline-none focus:ring-2 focus:ring-primary/30"
-      />
     </div>
   );
 }
