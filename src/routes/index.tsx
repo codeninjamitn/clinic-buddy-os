@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   useClinic, todayISO, startOfMonthISO, endOfMonthISO, initials as initialsOf, colorFor, formatINR,
 } from "@/lib/auth";
+import { useModals } from "@/lib/modals";
 import type { Appointment, ApptStatus } from "@/types/database";
 
 export const Route = createFileRoute("/")({ component: Dashboard });
@@ -23,6 +24,7 @@ const statusStyles: Record<string, string> = {
 
 function Dashboard() {
   const { clinic } = useClinic();
+  const { open: openModal, version } = useModals();
   const clinicId = clinic?.id;
 
   const [loading, setLoading] = useState(true);
@@ -89,7 +91,7 @@ function Dashboard() {
     }
   };
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [clinicId]);
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, [clinicId, version]);
 
   useEffect(() => {
     if (!clinicId) return;
@@ -143,7 +145,10 @@ function Dashboard() {
                 {todayAppts.filter(a => a.status === "Completed").length} of {todayCount} completed
               </p>
             </div>
-            <button className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white text-sm font-medium px-3.5 py-2 rounded-md transition-colors">
+            <button
+              onClick={() => openModal("book-appointment")}
+              className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white text-sm font-medium px-3.5 py-2 rounded-md transition-colors"
+            >
               <Plus className="w-4 h-4" /> Book New
             </button>
           </div>
@@ -218,15 +223,16 @@ function Dashboard() {
           <section className="card-surface p-5">
             <h3 className="font-semibold text-navy">Quick Actions</h3>
             <div className="grid grid-cols-2 gap-3 mt-4">
-              {[
-                { label: "New Appointment", Icon: Calendar },
-                { label: "Add Patient", Icon: UserPlus },
-                { label: "Create Invoice", Icon: FileText },
-                { label: "Upload Lab Report", Icon: FlaskConical },
-              ].map((q) => (
+              {([
+                { label: "New Appointment", Icon: Calendar, modal: "book-appointment" as const },
+                { label: "Add Patient", Icon: UserPlus, modal: "new-patient" as const },
+                { label: "Create Invoice", Icon: FileText, modal: "create-invoice" as const },
+                { label: "Upload Lab Report", Icon: FlaskConical, modal: "upload-lab-report" as const },
+              ]).map((q) => (
                 <button
                   key={q.label}
-                  className="border border-border rounded-lg p-3 flex flex-col items-start gap-2 hover:border-primary hover:bg-[#E1F5EE]/40 transition-colors text-left"
+                  onClick={() => openModal(q.modal)}
+                  className="border border-border rounded-lg p-3 flex flex-col items-start gap-2 hover:border-primary hover:bg-[#E1F5EE]/40 cursor-pointer active:scale-[0.97] transition-all duration-150 text-left"
                 >
                   <div className="w-9 h-9 rounded-md bg-[#E1F5EE] flex items-center justify-center">
                     <q.Icon className="w-4.5 h-4.5 text-primary" />

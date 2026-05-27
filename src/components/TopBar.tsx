@@ -1,11 +1,13 @@
-import { Bell, LogOut } from "lucide-react";
+import { Bell, LogOut, Calendar } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useClinic, initials } from "@/lib/auth";
+import { useModals } from "@/lib/modals";
 
 export function TopBar() {
   const { clinic } = useClinic();
   const { user } = useAuth();
+  const { open: openModal } = useModals();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -26,7 +28,13 @@ export function TopBar() {
         <h1 className="text-[15px] font-semibold text-navy">{clinic?.name ?? "Clinic"}</h1>
         <p className="text-xs text-muted-foreground">Bengaluru · KA</p>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => openModal("book-appointment")}
+          className="hidden sm:inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white text-sm font-medium px-3.5 py-2 rounded-md transition-colors"
+        >
+          <Calendar className="w-4 h-4" /> Book Appointment
+        </button>
         <button className="relative w-10 h-10 rounded-full hover:bg-muted flex items-center justify-center">
           <Bell className="w-5 h-5 text-navy" />
           <span className="absolute top-2 right-2.5 w-2 h-2 rounded-full bg-danger ring-2 ring-white" />
