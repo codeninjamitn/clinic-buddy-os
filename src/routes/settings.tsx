@@ -1,15 +1,55 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { staff as initialStaff } from "@/lib/mockData2";
-import { Upload, Plus, CheckCircle2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useClinic } from "@/lib/auth";
+import type { Staff, Role } from "@/types/database";
+import { Upload, Plus, CheckCircle2, X, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/settings")({ component: SettingsPage });
 
 function SettingsPage() {
-  const [staff, setStaff] = useState(initialStaff);
+  const { clinic, refresh } = useClinic();
+  const [staff, setStaff] = useState<Staff[]>([]);
+  const [addOpen, setAddOpen] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
 
-  const toggle = (id: string) => setStaff(staff.map((s) => (s.id === id ? { ...s, active: !s.active } : s)));
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [gst, setGst] = useState("");
+  const [address, setAddress] = useState("");
+
+  useEffect(() => {
+    if (!clinic) return;
+    setName(clinic.name);
+    setPhone(clinic.phone ?? "");
+    setGst(clinic.gst_number ?? "");
+    setAddress(clinic.address ?? "");
+  }, [clinic]);
+
+  const loadStaff = async () => {
+    if (!clinic) return;
+    const { data } = await supabase.from("staff").select("*").eq("clinic_id", clinic.id).order("name");
+    setStaff((data as Staff[]) ?? []);
+  };
+
+  useEffect(() => { loadStaff(); /* eslint-disable-next-line */ }, [clinic?.id]);
+
+  const saveProfile = async () => {
+    if (!clinic) return;
+    setSavingProfile(true);
+    const { error } = await supabase.from("clinics").update({ name, phone, gst_number: gst, address }).eq("id", clinic.id);
+    setSavingProfile(false);
+    if (error) return toast.error(error.message);
+    toast.success("Clinic profile saved");
+    refresh();
+  };
+
+  const toggle = async (s: Staff) => {
+    const { error } = await supabase.from("staff").update({ is_active: !s.is_active }).eq("id", s.id);
+    if (error) return toast.error(error.message);
+    loadStaff();
+  };
 
   return (
     <div className="max-w-[1100px] mx-auto animate-fade-in space-y-6">
@@ -18,7 +58,6 @@ function SettingsPage() {
         <p className="text-sm text-muted-foreground">Clinic profile, integrations and staff</p>
       </div>
 
-      {/* Clinic Profile */}
       <section className="card-surface p-6">
         <h3 className="text-base font-semibold text-navy mb-4">Clinic Profile</h3>
         <div className="grid grid-cols-1 md:grid-cols-[160px_1fr] gap-6">
@@ -30,33 +69,32 @@ function SettingsPage() {
             </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Field label="Clinic Name" value="Ramaiah Clinic" />
-            <Field label="Phone" value="+91 80 2345 6789" />
-            <Field label="Registration Number" value="KMC-2018-04421" />
-            <Field label="GST Number" value="29ABCDE1234F1Z5" />
+            <Field label="Clinic Name" value={name} onChange={setName} />
+            <Field label="Phone" value={phone} onChange={setPhone} />
+            <Field label="Registration Number" value="KMC-2018-04421" onChange={() => {}} />
+            <Field label="GST Number" value={gst} onChange={setGst} />
             <div className="md:col-span-2">
-              <Field label="Address" value="42, MG Road, Bengaluru, KA 560001" />
+              <Field label="Address" value={address} onChange={setAddress} />
             </div>
             <div className="md:col-span-2">
-              <button onClick={() => toast.success("Clinic profile saved")} className="px-4 py-2 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90">
-                Save Changes
+              <button onClick={saveProfile} disabled={savingProfile} className="px-4 py-2 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90 disabled:opacity-60 inline-flex items-center gap-2">
+                {savingProfile && <Loader2 className="w-4 h-4 animate-spin" />} Save Changes
               </button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ABDM */}
       <section className="card-surface p-6">
         <h3 className="text-base font-semibold text-navy mb-4">ABDM Integration</h3>
         <div className="flex flex-col md:flex-row gap-5 items-start">
-          <div className="w-20 h-20 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-lg shrink-0">
-            ABDM
-          </div>
+          <div className="w-20 h-20 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-lg shrink-0">ABDM</div>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               <h4 className="text-sm font-semibold text-navy">Ayushman Bharat Digital Mission</h4>
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-red-100 text-red-700">Not Connected</span>
+              <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${clinic?.abdm_connected ? "bg-[#E1F5EE] text-primary" : "bg-red-100 text-red-700"}`}>
+                {clinic?.abdm_connected ? "Connected" : "Not Connected"}
+              </span>
             </div>
             <p className="text-sm text-muted-foreground mb-3">Connect your clinic to India's national digital health infrastructure.</p>
             <ul className="space-y-1.5 mb-4">
@@ -77,11 +115,10 @@ function SettingsPage() {
         </div>
       </section>
 
-      {/* Staff */}
       <section className="card-surface overflow-hidden">
         <div className="p-6 pb-4 flex items-center justify-between">
           <h3 className="text-base font-semibold text-navy">Staff Management</h3>
-          <button onClick={() => toast.success("New staff member added")} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90">
+          <button onClick={() => setAddOpen(true)} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90">
             <Plus className="w-4 h-4" /> Add Staff Member
           </button>
         </div>
@@ -99,14 +136,14 @@ function SettingsPage() {
               <tr key={s.id} className="border-t border-border hover:bg-[#E1F5EE]/40 transition-colors">
                 <td className="px-6 py-3 font-medium text-navy">{s.name}</td>
                 <td className="px-6 py-3 text-muted-foreground">{s.role}</td>
-                <td className="px-6 py-3 text-muted-foreground">{s.phone}</td>
+                <td className="px-6 py-3 text-muted-foreground">{s.phone ?? "—"}</td>
                 <td className="px-6 py-3">
                   <div className="flex justify-end">
                     <button
-                      onClick={() => toggle(s.id)}
-                      className={`relative w-11 h-6 rounded-full transition-colors ${s.active ? "bg-primary" : "bg-muted"}`}
+                      onClick={() => toggle(s)}
+                      className={`relative w-11 h-6 rounded-full transition-colors ${s.is_active ? "bg-primary" : "bg-muted"}`}
                     >
-                      <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${s.active ? "translate-x-5" : "translate-x-0.5"}`} />
+                      <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${s.is_active ? "translate-x-5" : "translate-x-0.5"}`} />
                     </button>
                   </div>
                 </td>
@@ -115,15 +152,69 @@ function SettingsPage() {
           </tbody>
         </table>
       </section>
+
+      {addOpen && clinic && <AddStaffModal clinicId={clinic.id} onClose={() => setAddOpen(false)} onSaved={() => { setAddOpen(false); loadStaff(); }} />}
     </div>
   );
 }
 
-function Field({ label, value }: { label: string; value: string }) {
+function AddStaffModal({ clinicId, onClose, onSaved }: { clinicId: string; onClose: () => void; onSaved: () => void }) {
+  const [name, setName] = useState("");
+  const [role, setRole] = useState<Role>("Doctor");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const submit = async () => {
+    if (!name.trim()) { toast.error("Name required"); return; }
+    setSaving(true);
+    const { error } = await supabase.from("staff").insert({ clinic_id: clinicId, name, role, phone: phone || null, email: email || null });
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success("Staff member added");
+    onSaved();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
+      <div className="bg-white rounded-xl w-full max-w-md p-6 animate-scale-in" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-navy">Add Staff Member</h3>
+          <button onClick={onClose} className="p-1 hover:bg-muted rounded"><X className="w-5 h-5" /></button>
+        </div>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Name</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} className="w-full px-3 py-2 text-sm rounded-md border border-border" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Role</label>
+            <select value={role} onChange={(e) => setRole(e.target.value as Role)} className="w-full px-3 py-2 text-sm rounded-md border border-border bg-white">
+              <option>Doctor</option><option>Receptionist</option><option>Lab Technician</option><option>Pharmacist</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Phone</label>
+            <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full px-3 py-2 text-sm rounded-md border border-border" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Email</label>
+            <input value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-3 py-2 text-sm rounded-md border border-border" />
+          </div>
+          <button onClick={submit} disabled={saving} className="w-full py-2.5 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90 disabled:opacity-60 inline-flex items-center justify-center gap-2">
+            {saving && <Loader2 className="w-4 h-4 animate-spin" />} Save Staff
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <div>
       <label className="block text-xs font-medium text-muted-foreground mb-1">{label}</label>
-      <input defaultValue={value} className="w-full px-3 py-2 text-sm rounded-md border border-border focus:outline-none focus:ring-2 focus:ring-primary/30" />
+      <input value={value} onChange={(e) => onChange(e.target.value)} className="w-full px-3 py-2 text-sm rounded-md border border-border focus:outline-none focus:ring-2 focus:ring-primary/30" />
     </div>
   );
 }

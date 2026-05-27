@@ -3,15 +3,42 @@ import { useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 import { Toaster } from "@/components/ui/sonner";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Loader2 } from "lucide-react";
+import { AuthProvider, ClinicProvider, useAuth } from "@/lib/auth";
+import { LoginScreen } from "./LoginScreen";
 
 export function AppLayout() {
+  return (
+    <AuthProvider>
+      <AuthGate />
+      <Toaster position="bottom-right" richColors closeButton />
+    </AuthProvider>
+  );
+}
+
+function AuthGate() {
+  const { session, loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+  if (!session) return <LoginScreen />;
+  return (
+    <ClinicProvider>
+      <Shell />
+    </ClinicProvider>
+  );
+}
+
+function Shell() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const path = useRouterState({ select: (s) => s.location.pathname });
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Mobile hamburger */}
       <button
         onClick={() => setMobileOpen(true)}
         className="md:hidden fixed top-3 left-3 z-30 w-10 h-10 rounded-md bg-white border border-border flex items-center justify-center shadow"
@@ -20,7 +47,6 @@ export function AppLayout() {
         <Menu className="w-5 h-5 text-navy" />
       </button>
 
-      {/* Sidebar wrapper */}
       <div
         className={`fixed inset-y-0 left-0 z-40 transition-transform md:translate-x-0 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
@@ -46,8 +72,6 @@ export function AppLayout() {
           <Outlet />
         </main>
       </div>
-
-      <Toaster position="bottom-right" richColors closeButton />
     </div>
   );
 }
