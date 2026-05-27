@@ -4,15 +4,15 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { updateClinicProfile } from "@/lib/superadmin.functions";
 import { saCard, saInput, saLabel } from "./tokens";
-import type { Clinic } from "@/types/database";
+import type { SAClinic } from "./types";
 
-interface Props { clinic: Clinic; onClose: (saved: boolean) => void }
+interface Props { clinic: SAClinic; onClose: (saved: boolean) => void }
 type Plan = "starter" | "pro" | "enterprise";
 type Status = "active" | "suspended" | "setup";
 
 export function EditClinicModal({ clinic, onClose }: Props) {
   const update = useServerFn(updateClinicProfile);
-  const c = clinic as Clinic & { plan?: Plan; status?: Status; email?: string | null; registration_number?: string | null };
+  const c = clinic as SAClinic & { plan?: Plan; status?: Status; email?: string | null; registration_number?: string | null };
   const [name, setName] = useState(c.name);
   const [address, setAddress] = useState(c.address ?? "");
   const [phone, setPhone] = useState(c.phone ?? "");
@@ -27,7 +27,7 @@ export function EditClinicModal({ clinic, onClose }: Props) {
     setSaving(true);
     try {
       await update({ data: { id: c.id, patch: { name, address, phone, email, gst_number: gst, registration_number: reg, plan, status } } });
-      toast.success("Clinic updated");
+      toast.success("SAClinic updated");
       onClose(true);
     } catch (e) { toast.error((e as Error).message); setSaving(false); }
   };
@@ -36,11 +36,11 @@ export function EditClinicModal({ clinic, onClose }: Props) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(10,37,53,0.7)" }} onClick={() => onClose(false)}>
       <div className="w-full max-w-[560px] p-6 max-h-[90vh] overflow-y-auto" style={{ ...saCard }} onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold">Edit Clinic</h3>
+          <h3 className="text-lg font-bold">Edit SAClinic</h3>
           <button onClick={() => onClose(false)} className="p-1 rounded hover:bg-white/5"><X className="w-4 h-4" style={{ color: "#7FBBC5" }} /></button>
         </div>
         <div className="space-y-3">
-          <Field label="Clinic name"><input style={saInput} value={name} onChange={(e) => setName(e.target.value)} /></Field>
+          <Field label="SAClinic name"><input style={saInput} value={name} onChange={(e) => setName(e.target.value)} /></Field>
           <Field label="Address"><input style={saInput} value={address} onChange={(e) => setAddress(e.target.value)} /></Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Phone"><input style={saInput} value={phone} onChange={(e) => setPhone(e.target.value)} /></Field>

@@ -10,7 +10,7 @@ import {
 import { useSuperAdmin } from "@/context/SuperAdminContext";
 import { EditClinicModal } from "./EditClinicModal";
 import { saCard, saBadge, saChip } from "./tokens";
-import type { Clinic } from "@/types/database";
+import type { SAClinic } from "./types";
 
 export function OverviewPage({ onAdd }: { onAdd: () => void }) {
   const fetchMetrics = useServerFn(getPlatformMetrics);
@@ -19,18 +19,18 @@ export function OverviewPage({ onAdd }: { onAdd: () => void }) {
   const logEnter = useServerFn(logClinicEntered);
 
   const { enterClinic } = useSuperAdmin();
-  const [editing, setEditing] = useState<Clinic | null>(null);
+  const [editing, setEditing] = useState<SAClinic | null>(null);
 
   const metrics = useQuery({ queryKey: ["sa-metrics"], queryFn: () => fetchMetrics(), refetchOnWindowFocus: false });
   const list = useQuery({ queryKey: ["sa-clinics"], queryFn: () => fetchList(), refetchOnWindowFocus: false });
 
-  const toggle = async (c: Clinic & { status?: string }) => {
+  const toggle = async (c: SASAClinic & { status?: string }) => {
     const next = c.status === "active" ? "suspended" : "active";
     await updateStatus({ data: { id: c.id, status: next as "active" | "suspended" } });
-    toast.success(`Clinic ${next}`);
+    toast.success(`SAClinic ${next}`);
     metrics.refetch(); list.refetch();
   };
-  const onEnter = async (c: Clinic) => {
+  const onEnter = async (c: SAClinic) => {
     await logEnter({ data: { id: c.id } });
     enterClinic(c.id, c.name);
   };
@@ -43,7 +43,7 @@ export function OverviewPage({ onAdd }: { onAdd: () => void }) {
           <p className="text-[13px]" style={{ color: "#7FBBC5" }}>Manage every clinic on ClinicOS</p>
         </div>
         <button onClick={onAdd} className="px-4 py-2 rounded-md text-[13px] font-semibold inline-flex items-center gap-2" style={{ background: "#02C39A", color: "#0A2535" }}>
-          + Add New Clinic
+          + Add New SAClinic
         </button>
       </div>
 
@@ -88,12 +88,12 @@ export function OverviewPage({ onAdd }: { onAdd: () => void }) {
                   </div>
                   <div className="flex gap-2 mt-4">
                     <button onClick={() => onEnter(c)} className="flex-1 px-3 py-2 rounded-md text-[12px] font-semibold inline-flex items-center justify-center gap-1.5" style={{ background: "#02C39A", color: "#0A2535" }}>
-                      <Building2 className="w-3.5 h-3.5" /> Enter Clinic
+                      <Building2 className="w-3.5 h-3.5" /> Enter SAClinic
                     </button>
                     <button onClick={() => setEditing(c)} className="w-9 h-9 rounded-md flex items-center justify-center hover:bg-white/5" style={{ border: "1px solid #1A4055", color: "#7FBBC5" }} aria-label="Edit">
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
-                    <button onClick={() => toggle(c as Clinic & { status?: string })} className="w-9 h-9 rounded-md flex items-center justify-center hover:bg-white/5" style={{ border: "1px solid #1A4055", color: isActive ? "#E05C5C" : "#02C39A" }} aria-label="Toggle">
+                    <button onClick={() => toggle(c as SAClinic & { status?: string })} className="w-9 h-9 rounded-md flex items-center justify-center hover:bg-white/5" style={{ border: "1px solid #1A4055", color: isActive ? "#E05C5C" : "#02C39A" }} aria-label="Toggle">
                       <Power className="w-3.5 h-3.5" />
                     </button>
                   </div>

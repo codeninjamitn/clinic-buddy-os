@@ -4,9 +4,9 @@ import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { deleteClinic } from "@/lib/superadmin.functions";
 import { saCard, saInput } from "./tokens";
-import type { Clinic } from "@/types/database";
+import type { SAClinic } from "./types";
 
-export function DeleteClinicModal({ clinic, onClose }: { clinic: Clinic; onClose: (deleted: boolean) => void }) {
+export function DeleteClinicModal({ clinic, onClose }: { clinic: SAClinic; onClose: (deleted: boolean) => void }) {
   const del = useServerFn(deleteClinic);
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
@@ -16,7 +16,7 @@ export function DeleteClinicModal({ clinic, onClose }: { clinic: Clinic; onClose
     setBusy(true);
     try {
       await del({ data: { id: clinic.id } });
-      toast.success("Clinic deleted");
+      toast.success("SAClinic deleted");
       onClose(true);
     } catch (e) { toast.error((e as Error).message); setBusy(false); }
   };

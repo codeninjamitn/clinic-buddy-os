@@ -10,7 +10,7 @@ import { useSuperAdmin } from "@/context/SuperAdminContext";
 import { saCard, saBadge, saChip, saInput } from "./tokens";
 import { EditClinicModal } from "./EditClinicModal";
 import { DeleteClinicModal } from "./DeleteClinicModal";
-import type { Clinic } from "@/types/database";
+import type { SAClinic } from "./types";
 
 type Filter = "all" | "active" | "suspended" | "setup";
 
@@ -23,8 +23,8 @@ export function AllClinicsPage({ onAdd }: { onAdd: () => void }) {
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const [editing, setEditing] = useState<Clinic | null>(null);
-  const [deleting, setDeleting] = useState<Clinic | null>(null);
+  const [editing, setEditing] = useState<SAClinic | null>(null);
+  const [deleting, setDeleting] = useState<SAClinic | null>(null);
 
   const list = useQuery({ queryKey: ["sa-clinics"], queryFn: () => fetchList(), refetchOnWindowFocus: false });
 
@@ -39,14 +39,14 @@ export function AllClinicsPage({ onAdd }: { onAdd: () => void }) {
     });
   }, [list.data, filter, q]);
 
-  const onEnter = async (c: Clinic) => {
+  const onEnter = async (c: SAClinic) => {
     await logEnter({ data: { id: c.id } });
     enterClinic(c.id, c.name);
   };
-  const onSuspend = async (c: Clinic & { status?: string }) => {
+  const onSuspend = async (c: SASAClinic & { status?: string }) => {
     const next = c.status === "active" ? "suspended" : "active";
     await updateStatus({ data: { id: c.id, status: next as "active" | "suspended" } });
-    toast.success(`Clinic ${next}`);
+    toast.success(`SAClinic ${next}`);
     list.refetch(); setOpenMenu(null);
   };
 
@@ -58,7 +58,7 @@ export function AllClinicsPage({ onAdd }: { onAdd: () => void }) {
           <p className="text-[13px]" style={{ color: "#7FBBC5" }}>Browse, search and manage every clinic.</p>
         </div>
         <button onClick={onAdd} className="px-4 py-2 rounded-md text-[13px] font-semibold inline-flex items-center gap-2" style={{ background: "#02C39A", color: "#0A2535" }}>
-          <PlusCircle className="w-4 h-4" /> Add New Clinic
+          <PlusCircle className="w-4 h-4" /> Add New SAClinic
         </button>
       </div>
 
@@ -91,7 +91,7 @@ export function AllClinicsPage({ onAdd }: { onAdd: () => void }) {
           <table className="w-full text-[13px]">
             <thead>
               <tr style={{ background: "#0A2535", color: "#7FBBC5" }}>
-                <Th>Clinic Name</Th><Th>City</Th><Th>Plan</Th><Th>Status</Th>
+                <Th>SAClinic Name</Th><Th>City</Th><Th>Plan</Th><Th>Status</Th>
                 <Th>Patients</Th><Th>Staff</Th><Th>Created</Th><Th className="text-right">Actions</Th>
               </tr>
             </thead>
@@ -122,7 +122,7 @@ export function AllClinicsPage({ onAdd }: { onAdd: () => void }) {
                           </button>
                           {openMenu === c.id && (
                             <div className="absolute right-0 top-8 w-40 z-20 rounded-md py-1" style={{ background: "#102F40", border: "1px solid #1A4055" }}>
-                              <button onClick={() => onSuspend(c as Clinic & { status?: string })} className="w-full text-left px-3 py-1.5 text-[12px] hover:bg-white/5">
+                              <button onClick={() => onSuspend(c as SAClinic & { status?: string })} className="w-full text-left px-3 py-1.5 text-[12px] hover:bg-white/5">
                                 {status === "active" ? "Suspend" : "Activate"}
                               </button>
                               <button onClick={() => { setDeleting(c); setOpenMenu(null); }} className="w-full text-left px-3 py-1.5 text-[12px] hover:bg-white/5" style={{ color: "#E05C5C" }}>
