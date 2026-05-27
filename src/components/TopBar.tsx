@@ -1,7 +1,8 @@
-import { Bell, LogOut } from "lucide-react";
+import { Bell, LogOut, Calendar } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, useClinic, initials } from "@/lib/auth";
+import { useModals } from "@/lib/modals";
 
 export function TopBar() {
   const { clinic } = useClinic();
