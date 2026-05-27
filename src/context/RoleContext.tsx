@@ -41,10 +41,10 @@ export function RoleProvider({ children }: { children: ReactNode }) {
         setStaffName(data.name);
         setRole(data.role as StaffRole);
       } else {
-        // No staff record → treat as Admin (e.g. seeded admin account)
+        // No staff record → no role (deny by default)
         setStaffId(null);
-        setStaffName(user.email?.split("@")[0] ?? "Admin");
-        setRole("Admin");
+        setStaffName(user.email?.split("@")[0] ?? "");
+        setRole(null);
       }
       setLoading(false);
     }
