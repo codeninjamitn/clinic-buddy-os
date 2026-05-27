@@ -3,12 +3,14 @@ import { BookAppointmentModal } from "@/components/modals/BookAppointmentModal";
 import { NewPatientModal } from "@/components/modals/NewPatientModal";
 import { CreateInvoiceModal } from "@/components/modals/CreateInvoiceModal";
 import { UploadLabReportModal } from "@/components/modals/UploadLabReportModal";
+import { ConsultationModal } from "@/components/modals/ConsultationModal";
 
 export type ActiveModal =
   | "book-appointment"
   | "new-patient"
   | "create-invoice"
   | "upload-lab-report"
+  | "consultation"
   | null;
 
 export interface ModalPayload {
@@ -77,6 +79,13 @@ export function ModalsProvider({ children }: { children: ReactNode }) {
         onClose={close}
         onSuccess={success}
         initialFile={payload.file ?? null}
+      />
+      <ConsultationModal
+        isOpen={active === "consultation"}
+        onClose={close}
+        onSuccess={success}
+        patientId={payload.patientId ?? null}
+        patientName={payload.patientName ?? null}
       />
     </Ctx.Provider>
   );
