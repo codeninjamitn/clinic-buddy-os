@@ -145,7 +145,10 @@ function Dashboard() {
                 {todayAppts.filter(a => a.status === "Completed").length} of {todayCount} completed
               </p>
             </div>
-            <button className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white text-sm font-medium px-3.5 py-2 rounded-md transition-colors">
+            <button
+              onClick={() => openModal("book-appointment")}
+              className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white text-sm font-medium px-3.5 py-2 rounded-md transition-colors"
+            >
               <Plus className="w-4 h-4" /> Book New
             </button>
           </div>
