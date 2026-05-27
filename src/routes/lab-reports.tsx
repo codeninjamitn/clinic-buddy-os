@@ -166,11 +166,11 @@ function UploadModal({ clinicId, file, onClose, onSaved }: { clinicId: string; f
       const path = `${clinicId}/${patientId}/${Date.now()}-${file.name}`;
       const { error: upErr } = await supabase.storage.from("lab-reports").upload(path, file);
       if (upErr) throw upErr;
-      const { data: { publicUrl } } = supabase.storage.from("lab-reports").getPublicUrl(path);
+      // Store the storage path (not a public URL). Signed URLs are minted on demand.
       const { error } = await supabase.from("lab_reports").insert({
         clinic_id: clinicId, patient_id: patientId, test_name: testName,
         lab_name: labName || null, test_date: new Date().toISOString().slice(0, 10),
-        file_url: publicUrl, status: "Delivered",
+        file_url: path, status: "Delivered",
         delivered_whatsapp: true, delivered_email: true,
       });
       if (error) throw error;
