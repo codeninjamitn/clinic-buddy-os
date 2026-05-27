@@ -7,12 +7,13 @@ interface RoleContextValue {
   role: StaffRole | null;
   staffName: string;
   staffId: string | null;
+  isSuperAdmin: boolean;
   loading: boolean;
   can: (permission: Permission) => boolean;
 }
 
 const RoleContext = createContext<RoleContextValue>({
-  role: null, staffName: "", staffId: null, loading: true, can: () => false,
+  role: null, staffName: "", staffId: null, isSuperAdmin: false, loading: true, can: () => false,
 });
 
 export function RoleProvider({ children }: { children: ReactNode }) {
@@ -20,30 +21,33 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<StaffRole | null>(null);
   const [staffName, setStaffName] = useState("");
   const [staffId, setStaffId] = useState<string | null>(null);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     async function run() {
       if (!user || !session) {
-        setRole(null); setStaffName(""); setStaffId(null); setLoading(false);
+        setRole(null); setStaffName(""); setStaffId(null); setIsSuperAdmin(false); setLoading(false);
         return;
       }
       setLoading(true);
       const { data } = await supabase
         .from("staff")
-        .select("id, name, role")
+        .select("id, name, role, is_super_admin")
         .eq("auth_user_id", user.id)
         .maybeSingle();
       if (cancelled) return;
       if (data) {
         setStaffId(data.id);
         setStaffName(data.name);
-        setRole(data.role as StaffRole);
+        const superFlag = !!(data as { is_super_admin?: boolean }).is_super_admin;
+        setIsSuperAdmin(superFlag);
+        setRole(superFlag ? "SuperAdmin" : (data.role as StaffRole));
       } else {
-        // No staff record → no role (deny by default)
         setStaffId(null);
         setStaffName(user.email?.split("@")[0] ?? "");
+        setIsSuperAdmin(false);
         setRole(null);
       }
       setLoading(false);
@@ -54,7 +58,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
 
   return (
     <RoleContext.Provider value={{
-      role, staffName, staffId, loading,
+      role, staffName, staffId, isSuperAdmin, loading,
       can: (p) => can(role, p),
     }}>
       {children}

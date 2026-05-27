@@ -1,4 +1,4 @@
-export type StaffRole = "Doctor" | "Receptionist" | "Lab Technician" | "Pharmacist" | "Admin";
+export type StaffRole = "Doctor" | "Receptionist" | "Lab Technician" | "Pharmacist" | "Admin" | "SuperAdmin";
 
 export type Permission =
   | "book_appointment"
@@ -15,16 +15,21 @@ export type Permission =
   | "access_settings"
   | "view_patients"
   | "view_billing"
-  | "view_appointments";
+  | "view_appointments"
+  | "manage_clinics"
+  | "enter_any_clinic";
+
+const ADMIN_BASE: Permission[] = [
+  "book_appointment", "register_patient", "view_patient_medical_history",
+  "write_prescription", "add_diagnosis", "mark_appointment_complete",
+  "create_invoice", "upload_lab_report", "view_lab_reports",
+  "view_inventory", "edit_inventory", "access_settings",
+  "view_patients", "view_billing", "view_appointments",
+];
 
 const ROLE_PERMISSIONS: Record<StaffRole, Permission[]> = {
-  Admin: [
-    "book_appointment", "register_patient", "view_patient_medical_history",
-    "write_prescription", "add_diagnosis", "mark_appointment_complete",
-    "create_invoice", "upload_lab_report", "view_lab_reports",
-    "view_inventory", "edit_inventory", "access_settings",
-    "view_patients", "view_billing", "view_appointments",
-  ],
+  SuperAdmin: [...ADMIN_BASE, "manage_clinics", "enter_any_clinic"],
+  Admin: [...ADMIN_BASE],
   Doctor: [
     "book_appointment", "register_patient", "view_patient_medical_history",
     "write_prescription", "add_diagnosis", "mark_appointment_complete",
@@ -54,4 +59,5 @@ export const ROLE_BADGE: Record<StaffRole, string> = {
   "Lab Technician": "bg-amber-100 text-amber-800",
   Pharmacist: "bg-purple-100 text-purple-700",
   Admin: "bg-navy text-white",
+  SuperAdmin: "bg-[#0C2D3E] text-[#02C39A]",
 };
