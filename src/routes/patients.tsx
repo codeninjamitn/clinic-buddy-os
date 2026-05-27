@@ -4,6 +4,7 @@ import { Search, Eye, Pencil, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useClinic, initials as initialsOf, colorFor, ageFromDob } from "@/lib/auth";
 import { useModals } from "@/lib/modals";
+import { useRole } from "@/context/RoleContext";
 import { PatientDrawer } from "@/components/PatientDrawer";
 import type { Patient } from "@/types/database";
 
@@ -15,6 +16,7 @@ type Filter = (typeof filters)[number];
 function PatientsPage() {
   const { clinic } = useClinic();
   const { open: openModal, version } = useModals();
+  const { can } = useRole();
   const clinicId = clinic?.id;
   const [q, setQ] = useState("");
   const [debounced, setDebounced] = useState("");
@@ -57,12 +59,14 @@ function PatientsPage() {
             {rows.length} total · {rows.filter((p) => p.is_active).length} active
           </p>
         </div>
-        <button
-          onClick={() => openModal("new-patient")}
-          className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors"
-        >
-          <UserPlus className="w-4 h-4" /> Add Patient
-        </button>
+        {can("register_patient") && (
+          <button
+            onClick={() => openModal("new-patient")}
+            className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white text-sm font-medium px-4 py-2 rounded-md transition-colors"
+          >
+            <UserPlus className="w-4 h-4" /> Add Patient
+          </button>
+        )}
       </div>
 
       <div className="card-surface p-4 space-y-4">

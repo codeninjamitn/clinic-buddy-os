@@ -11,6 +11,8 @@ import {
   useClinic, todayISO, startOfMonthISO, endOfMonthISO, initials as initialsOf, colorFor, formatINR,
 } from "@/lib/auth";
 import { useModals } from "@/lib/modals";
+import { useRole } from "@/context/RoleContext";
+import type { Permission } from "@/lib/permissions";
 import type { Appointment, ApptStatus } from "@/types/database";
 
 export const Route = createFileRoute("/")({ component: Dashboard });
@@ -25,6 +27,7 @@ const statusStyles: Record<string, string> = {
 function Dashboard() {
   const { clinic } = useClinic();
   const { open: openModal, version } = useModals();
+  const { can, staffName, role } = useRole();
   const clinicId = clinic?.id;
 
   const [loading, setLoading] = useState(true);
@@ -112,8 +115,8 @@ function Dashboard() {
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto">
       <div>
-        <h2 className="text-2xl font-bold text-navy">Good morning, Dr. Ramaiah</h2>
-        <p className="text-sm text-muted-foreground mt-0.5">Here's what's happening at your clinic today.</p>
+        <h2 className="text-2xl font-bold text-navy">Welcome, {staffName || "there"}</h2>
+        <p className="text-sm text-muted-foreground mt-0.5">{role ? `Signed in as ${role}.` : ""} Here's what's happening at your clinic today.</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -145,12 +148,14 @@ function Dashboard() {
                 {todayAppts.filter(a => a.status === "Completed").length} of {todayCount} completed
               </p>
             </div>
-            <button
-              onClick={() => openModal("book-appointment")}
-              className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white text-sm font-medium px-3.5 py-2 rounded-md transition-colors"
-            >
-              <Plus className="w-4 h-4" /> Book New
-            </button>
+            {can("book_appointment") && (
+              <button
+                onClick={() => openModal("book-appointment")}
+                className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white text-sm font-medium px-3.5 py-2 rounded-md transition-colors"
+              >
+                <Plus className="w-4 h-4" /> Book New
+              </button>
+            )}
           </div>
           {error && (
             <div className="text-sm bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md mb-3 flex justify-between items-center">
@@ -224,11 +229,11 @@ function Dashboard() {
             <h3 className="font-semibold text-navy">Quick Actions</h3>
             <div className="grid grid-cols-2 gap-3 mt-4">
               {([
-                { label: "New Appointment", Icon: Calendar, modal: "book-appointment" as const },
-                { label: "Add Patient", Icon: UserPlus, modal: "new-patient" as const },
-                { label: "Create Invoice", Icon: FileText, modal: "create-invoice" as const },
-                { label: "Upload Lab Report", Icon: FlaskConical, modal: "upload-lab-report" as const },
-              ]).map((q) => (
+                { label: "New Appointment", Icon: Calendar, modal: "book-appointment" as const, perm: "book_appointment" as Permission },
+                { label: "Add Patient", Icon: UserPlus, modal: "new-patient" as const, perm: "register_patient" as Permission },
+                { label: "Create Invoice", Icon: FileText, modal: "create-invoice" as const, perm: "create_invoice" as Permission },
+                { label: "Upload Lab Report", Icon: FlaskConical, modal: "upload-lab-report" as const, perm: "upload_lab_report" as Permission },
+              ]).filter((q) => can(q.perm)).map((q) => (
                 <button
                   key={q.label}
                   onClick={() => openModal(q.modal)}

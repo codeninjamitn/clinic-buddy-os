@@ -4,6 +4,7 @@ import { Eye, Download, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useClinic, formatINR, initials as initialsOf } from "@/lib/auth";
 import { useModals } from "@/lib/modals";
+import { useRole } from "@/context/RoleContext";
 import type { Invoice, InvoiceStatus } from "@/types/database";
 
 export const Route = createFileRoute("/billing")({ component: BillingPage });
@@ -31,6 +32,7 @@ function methodBadge(m: string | null) {
 function BillingPage() {
   const { clinic } = useClinic();
   const { open: openModal, version } = useModals();
+  const { can } = useRole();
   const clinicId = clinic?.id;
 
   const [tab, setTab] = useState<"invoices" | "payments">("invoices");
@@ -65,9 +67,11 @@ function BillingPage() {
           <h2 className="text-2xl font-bold text-navy">Billing</h2>
           <p className="text-sm text-muted-foreground">Invoices, payments and collections</p>
         </div>
-        <button onClick={() => openModal("create-invoice")} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90 active:bg-primary/80 transition-colors">
-          <Plus className="w-4 h-4" /> Create Invoice
-        </button>
+        {can("create_invoice") && (
+          <button onClick={() => openModal("create-invoice")} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90 active:bg-primary/80 transition-colors">
+            <Plus className="w-4 h-4" /> Create Invoice
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
