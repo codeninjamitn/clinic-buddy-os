@@ -2,33 +2,19 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Stethoscope, Loader2 } from "lucide-react";
 
-const TEST_ACCOUNTS: { label: string; email: string; password: string }[] = [
-  { label: "Doctor", email: "doctor@ramaiaiclinic.in", password: "Doctor@1234" },
-  { label: "Receptionist", email: "reception@ramaiaiclinic.in", password: "Staff@1234" },
-  { label: "Lab Tech", email: "lab@ramaiaiclinic.in", password: "Lab@1234" },
-  { label: "Pharmacist", email: "pharmacy@ramaiaiclinic.in", password: "Pharma@1234" },
-];
-
 export function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const signIn = async (e?: React.FormEvent, override?: { email: string; password: string }) => {
+  const signIn = async (e?: React.FormEvent) => {
     e?.preventDefault();
     setError(null);
     setLoading(true);
-    const creds = override ?? { email, password };
-    const { error } = await supabase.auth.signInWithPassword(creds);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) setError("Invalid email or password");
     setLoading(false);
-  };
-
-  const quick = async (acc: { email: string; password: string }) => {
-    setEmail(acc.email);
-    setPassword(acc.password);
-    await signIn(undefined, acc);
   };
 
   return (
@@ -80,23 +66,6 @@ export function LoginScreen() {
             {loading && <Loader2 className="w-4 h-4 animate-spin" />} Sign in
           </button>
         </form>
-
-        <div className="mt-6 pt-4 border-t border-border">
-          <p className="text-[12px] text-muted-foreground text-center mb-2">Test accounts</p>
-          <div className="grid grid-cols-2 gap-2">
-            {TEST_ACCOUNTS.map((a) => (
-              <button
-                key={a.email}
-                type="button"
-                disabled={loading}
-                onClick={() => quick(a)}
-                className="text-[11px] font-medium px-2 py-1.5 rounded-md border border-border bg-white text-navy hover:bg-muted transition-colors disabled:opacity-60"
-              >
-                {a.label}
-              </button>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );
