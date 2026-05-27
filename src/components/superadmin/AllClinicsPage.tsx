@@ -109,7 +109,7 @@ export function AllClinicsPage({ onAdd }: { onAdd: () => void }) {
                     <Td><span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase" style={saBadge(status)}>{status}</span></Td>
                     <Td>{s.patients}</Td>
                     <Td>{s.staff}</Td>
-                    <Td>{new Date(c.created_at).toLocaleDateString()}</Td>
+                    <Td>{new Date(c.created_at ?? "").toLocaleDateString()}</Td>
                     <Td className="text-right">
                       <div className="inline-flex items-center gap-1.5">
                         <button onClick={() => onEnter(c)} className="px-2.5 py-1 rounded-md text-[11px] font-semibold" style={{ background: "#02C39A", color: "#0A2535" }}>Enter</button>
