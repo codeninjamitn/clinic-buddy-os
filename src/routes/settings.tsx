@@ -49,6 +49,27 @@ function SettingsPage() {
     refresh();
   };
 
+  const onPickLogo = () => fileRef.current?.click();
+
+  const onLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file || !clinic) return;
+    if (!file.type.startsWith("image/")) return toast.error("Please select an image file");
+    if (file.size > 2 * 1024 * 1024) return toast.error("Logo must be under 2 MB");
+    setUploadingLogo(true);
+    const ext = file.name.split(".").pop() || "png";
+    const path = `${clinic.id}/logo-${Date.now()}.${ext}`;
+    const { error: upErr } = await supabase.storage.from("clinic-logos").upload(path, file, { upsert: true, contentType: file.type });
+    if (upErr) { setUploadingLogo(false); return toast.error(upErr.message); }
+    const { data } = supabase.storage.from("clinic-logos").getPublicUrl(path);
+    const { error: dbErr } = await supabase.from("clinics").update({ logo_url: data.publicUrl }).eq("id", clinic.id);
+    setUploadingLogo(false);
+    if (dbErr) return toast.error(dbErr.message);
+    toast.success("Logo updated");
+    refresh();
+  };
+
   const toggle = async (s: Staff) => {
     const { error } = await supabase.from("staff").update({ is_active: !s.is_active }).eq("id", s.id);
     if (error) return toast.error(error.message);
