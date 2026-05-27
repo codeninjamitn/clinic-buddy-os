@@ -1,18 +1,26 @@
 import { useEffect, useState } from "react";
-import { X, Phone, Mail, MapPin, AlertTriangle, Pill, Calendar } from "lucide-react";
+import { X, Phone, Mail, MapPin, AlertTriangle, Pill, Calendar, Stethoscope } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ageFromDob, colorFor, initials as initialsOf, formatINR } from "@/lib/auth";
 import { useModals } from "@/lib/modals";
+import { useRole } from "@/context/RoleContext";
 import type { Patient, Appointment, Invoice } from "@/types/database";
 
 type Tab = "Overview" | "Visit History" | "Prescriptions" | "Billing";
+
+interface PrescriptionRow {
+  id: string; diagnosis: string | null; medicines: any; notes: string | null;
+  follow_up_date: string | null; created_at: string;
+}
 
 export function PatientDrawer({ patient, onClose }: { patient: Patient | null; onClose: () => void }) {
   const [tab, setTab] = useState<Tab>("Overview");
   const [visits, setVisits] = useState<Appointment[]>([]);
   const [bills, setBills] = useState<Invoice[]>([]);
+  const [rxs, setRxs] = useState<PrescriptionRow[]>([]);
   const [loadingTab, setLoadingTab] = useState(false);
-  const { open: openModal } = useModals();
+  const { open: openModal, version } = useModals();
+  const { can } = useRole();
 
   useEffect(() => {
     if (patient) setTab("Overview");
@@ -36,8 +44,14 @@ export function PatientDrawer({ patient, onClose }: { patient: Patient | null; o
         .eq("patient_id", patient.id)
         .order("created_at", { ascending: false })
         .then(({ data }) => { setBills((data as unknown as Invoice[]) ?? []); setLoadingTab(false); });
+    } else if (tab === "Prescriptions") {
+      setLoadingTab(true);
+      supabase.from("prescriptions").select("id, diagnosis, medicines, notes, follow_up_date, created_at")
+        .eq("patient_id", patient.id)
+        .order("created_at", { ascending: false })
+        .then(({ data }) => { setRxs((data as PrescriptionRow[]) ?? []); setLoadingTab(false); });
     }
-  }, [tab, patient]);
+  }, [tab, patient, version]);
 
   const open = !!patient;
   const allergies = patient?.known_allergies ? patient.known_allergies.split(",").map(s => s.trim()).filter(Boolean) : [];
@@ -162,9 +176,42 @@ export function PatientDrawer({ patient, onClose }: { patient: Patient | null; o
               )}
 
               {tab === "Prescriptions" && (
-                <div className="text-sm text-muted-foreground text-center py-10">
-                  No prescriptions to display yet.
-                </div>
+                loadingTab ? (
+                  <div className="space-y-3">{[...Array(3)].map((_, i) => <div key={i} className="h-16 bg-muted rounded animate-pulse" />)}</div>
+                ) : rxs.length === 0 ? (
+                  <div className="text-sm text-muted-foreground text-center py-10">No prescriptions yet.</div>
+                ) : (
+                  <ul className="space-y-3">
+                    {rxs.map((r) => {
+                      const meds = Array.isArray(r.medicines) ? r.medicines : [];
+                      return (
+                        <li key={r.id} className="border border-border rounded-lg p-3">
+                          <div className="flex items-center justify-between mb-1">
+                            <p className="text-sm font-semibold text-navy">{r.diagnosis ?? "Consultation"}</p>
+                            <span className="text-[11px] text-muted-foreground">{new Date(r.created_at).toLocaleDateString("en-IN")}</span>
+                          </div>
+                          {meds.length > 0 && (
+                            <ul className="text-xs text-navy/80 space-y-0.5 mt-1.5">
+                              {meds.map((m: any, i: number) => (
+                                <li key={i} className="flex items-center gap-1.5">
+                                  <Pill className="w-3 h-3 text-primary" />
+                                  <span className="font-medium">{m.name}</span>
+                                  {m.dose && <span className="text-muted-foreground">· {m.dose}</span>}
+                                  {m.frequency && <span className="text-muted-foreground">· {m.frequency}</span>}
+                                  {m.days && <span className="text-muted-foreground">· {m.days}d</span>}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                          {r.notes && <p className="text-xs text-muted-foreground mt-2">{r.notes}</p>}
+                          {r.follow_up_date && (
+                            <p className="text-[11px] text-primary mt-1.5">Follow-up: {new Date(r.follow_up_date).toLocaleDateString("en-IN")}</p>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )
               )}
 
               {tab === "Billing" && (
@@ -188,16 +235,26 @@ export function PatientDrawer({ patient, onClose }: { patient: Patient | null; o
               )}
             </div>
 
-            <div className="p-5 border-t border-border">
-              <button
-                onClick={() => {
-                  openModal("book-appointment", { patientId: patient.id, patientName: patient.name });
-                  onClose();
-                }}
-                className="w-full bg-primary hover:bg-primary/90 text-white font-medium text-sm py-2.5 rounded-md inline-flex items-center justify-center gap-2 transition-colors"
-              >
-                <Calendar className="w-4 h-4" /> Book Appointment
-              </button>
+            <div className="p-5 border-t border-border space-y-2">
+              {can("write_prescription") && (
+                <button
+                  onClick={() => openModal("consultation", { patientId: patient.id, patientName: patient.name })}
+                  className="w-full bg-primary hover:bg-primary/90 text-white font-medium text-sm py-2.5 rounded-md inline-flex items-center justify-center gap-2 transition-colors"
+                >
+                  <Stethoscope className="w-4 h-4" /> Start Consultation
+                </button>
+              )}
+              {can("book_appointment") && (
+                <button
+                  onClick={() => {
+                    openModal("book-appointment", { patientId: patient.id, patientName: patient.name });
+                    onClose();
+                  }}
+                  className="w-full border border-border text-navy font-medium text-sm py-2.5 rounded-md inline-flex items-center justify-center gap-2 hover:bg-muted transition-colors"
+                >
+                  <Calendar className="w-4 h-4" /> Book Appointment
+                </button>
+              )}
             </div>
           </>
         )}

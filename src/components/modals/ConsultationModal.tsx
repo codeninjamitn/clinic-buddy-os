@@ -54,7 +54,7 @@ export function ConsultationModal({ isOpen, onClose, onSuccess, patientId, patie
       patient_id: patientId,
       doctor_id: staffId,
       diagnosis,
-      medicines: cleanMeds,
+      medicines: cleanMeds as unknown as never,
       notes: notes || null,
       follow_up_date: followUp || null,
     });
