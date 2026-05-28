@@ -5,6 +5,7 @@ import {
   Stethoscope,
 } from "lucide-react";
 import { useRole } from "@/context/RoleContext";
+import { useClinic } from "@/lib/auth";
 import type { Permission } from "@/lib/permissions";
 import { ROLE_BADGE } from "@/lib/permissions";
 
@@ -21,6 +22,7 @@ const nav: { to: string; label: string; icon: typeof LayoutDashboard; exact?: bo
 export function Sidebar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { can, role, staffName } = useRole();
+  const { clinic } = useClinic();
   const items = nav.filter((n) => !n.perm || can(n.perm));
 
   return (
@@ -65,7 +67,7 @@ export function Sidebar() {
         })}
       </nav>
       <div className="p-4 border-t border-white/10 text-[11px] text-white/50">
-        v1.0 · © Ramaiah Clinic
+        v1.0 · © {clinic?.name ?? "ClinicOS"}
       </div>
     </aside>
   );
