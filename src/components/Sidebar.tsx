@@ -67,7 +67,7 @@ export function Sidebar() {
         })}
       </nav>
       <div className="p-4 border-t border-white/10 text-[11px] text-white/50">
-        v1.0 · © Ramaiah Clinic
+        v1.0 · © {clinic?.name ?? "ClinicOS"}
       </div>
     </aside>
   );
