@@ -232,8 +232,6 @@ export const launchClinic = createServerFn({ method: "POST" })
           auth_user_id: u.user.id, is_active: true,
         });
         if (sErr) throw new Error(sErr.message);
-        result.adminEmail = data.admin.email;
-        result.adminPassword = data.admin.password;
       } catch (e) {
         result.failedStep = "admin"; result.error = (e as Error).message; return result;
       }
