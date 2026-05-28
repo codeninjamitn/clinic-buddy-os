@@ -26,8 +26,10 @@ interface InventoryRow {
 
 const STEPS = ["Clinic Details", "Admin Account", "Team Members", "Initial Inventory", "Review & Launch"] as const;
 
-function rndPw() {
-  return "Pw" + Math.random().toString(36).slice(2, 8) + "!" + Math.floor(Math.random() * 99);
+function rndPw(len = 16) {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$%&!";
+  const arr = crypto.getRandomValues(new Uint8Array(len));
+  return Array.from(arr, (b) => chars[b % chars.length]).join("");
 }
 
 export function AddClinicWizard({ onClose }: { onClose: (created: boolean) => void }) {
