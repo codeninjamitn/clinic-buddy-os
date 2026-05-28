@@ -324,7 +324,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function ResultModal({ title, result, onClose }: { title: string; result: { adminEmail?: string; adminPassword?: string; teamCount: number; inventoryCount: number }; onClose: () => void }) {
+function ResultModal({ title, result, adminEmail, adminPassword, onClose }: { title: string; result: { teamCount: number; inventoryCount: number }; adminEmail?: string; adminPassword?: string; onClose: () => void }) {
   const copy = (s: string) => { navigator.clipboard.writeText(s); toast.success("Copied"); };
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(10,37,53,0.75)" }}>
@@ -335,16 +335,16 @@ function ResultModal({ title, result, onClose }: { title: string; result: { admi
         </div>
         <div className="space-y-2 text-[13px]">
           <p style={{ color: "#7FBBC5" }}>{result.teamCount} team members, {result.inventoryCount} inventory items added.</p>
-          {result.adminEmail && (
+          {adminEmail && (
             <div className="p-3 rounded-md" style={{ background: "#0A2535", border: "1px solid #1A4055" }}>
               <div className="text-[11px] uppercase mb-1" style={{ color: "#7FBBC5" }}>Admin Login</div>
               <div className="flex items-center justify-between gap-2">
-                <code className="text-[12px]">{result.adminEmail}</code>
-                <button onClick={() => copy(result.adminEmail!)} className="p-1 rounded hover:bg-white/5"><Copy className="w-3 h-3" /></button>
+                <code className="text-[12px]">{adminEmail}</code>
+                <button onClick={() => copy(adminEmail)} className="p-1 rounded hover:bg-white/5"><Copy className="w-3 h-3" /></button>
               </div>
               <div className="flex items-center justify-between gap-2 mt-1">
-                <code className="text-[12px]">{result.adminPassword}</code>
-                <button onClick={() => copy(result.adminPassword!)} className="p-1 rounded hover:bg-white/5"><Copy className="w-3 h-3" /></button>
+                <code className="text-[12px]">{adminPassword}</code>
+                <button onClick={() => copy(adminPassword!)} className="p-1 rounded hover:bg-white/5"><Copy className="w-3 h-3" /></button>
               </div>
             </div>
           )}
