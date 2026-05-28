@@ -88,33 +88,39 @@ export type Database = {
       clinic_invites: {
         Row: {
           accepted: boolean | null
+          accepted_at: string | null
           clinic_id: string | null
           created_at: string | null
           email: string
           id: string
           name: string
           role: string
-          temp_password: string
+          token_expires_at: string | null
+          token_hash: string | null
         }
         Insert: {
           accepted?: boolean | null
+          accepted_at?: string | null
           clinic_id?: string | null
           created_at?: string | null
           email: string
           id?: string
           name: string
           role: string
-          temp_password: string
+          token_expires_at?: string | null
+          token_hash?: string | null
         }
         Update: {
           accepted?: boolean | null
+          accepted_at?: string | null
           clinic_id?: string | null
           created_at?: string | null
           email?: string
           id?: string
           name?: string
           role?: string
-          temp_password?: string
+          token_expires_at?: string | null
+          token_hash?: string | null
         }
         Relationships: [
           {
