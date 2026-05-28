@@ -115,6 +115,8 @@ export function AddClinicWizard({ onClose }: { onClose: (created: boolean) => vo
       <ResultModal
         title="Clinic launched"
         result={result}
+        adminEmail={admin.email}
+        adminPassword={admin.password}
         onClose={() => onClose(true)}
       />
     );
