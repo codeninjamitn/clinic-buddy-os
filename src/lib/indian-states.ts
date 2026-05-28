@@ -6,16 +6,10 @@ export const INDIAN_STATES = [
   "Dadra and Nagar Haveli and Daman and Diu","Delhi","Jammu and Kashmir","Ladakh","Lakshadweep","Puducherry",
 ];
 
-export function generatePassword(len = 12) {
-  const lower = "abcdefghijkmnpqrstuvwxyz";
-  const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
-  const digits = "23456789";
-  const sym = "@#$%&!";
-  const all = lower + upper + digits + sym;
-  const pick = (s: string) => s[Math.floor(Math.random() * s.length)];
-  let pw = pick(upper) + pick(lower) + pick(digits) + pick(sym);
-  for (let i = 4; i < len; i++) pw += pick(all);
-  return pw.split("").sort(() => Math.random() - 0.5).join("");
+export function generatePassword(len = 16) {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$%&!";
+  const arr = crypto.getRandomValues(new Uint8Array(len));
+  return Array.from(arr, (b) => chars[b % chars.length]).join("");
 }
 
 export function passwordStrength(pw: string): { score: 0|1|2|3; label: string; color: string } {
