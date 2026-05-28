@@ -189,8 +189,6 @@ export const launchClinic = createServerFn({ method: "POST" })
     await assertSuperAdmin(context.userId);
     const result: {
       clinicId?: string;
-      adminEmail?: string;
-      adminPassword?: string;
       teamCount: number;
       inventoryCount: number;
       failedStep?: LaunchStep;
