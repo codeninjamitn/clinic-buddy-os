@@ -5,6 +5,7 @@ import {
   Stethoscope,
 } from "lucide-react";
 import { useRole } from "@/context/RoleContext";
+import { useClinic } from "@/lib/auth";
 import type { Permission } from "@/lib/permissions";
 import { ROLE_BADGE } from "@/lib/permissions";
 
