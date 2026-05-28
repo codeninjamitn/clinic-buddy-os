@@ -138,32 +138,73 @@ function SettingsPage() {
 
       <section className="card-surface p-6">
         <h3 className="text-base font-semibold text-navy mb-4">ABDM Integration</h3>
-        <div className="flex flex-col md:flex-row gap-5 items-start">
-          <div className="w-20 h-20 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-lg shrink-0">ABDM</div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <h4 className="text-sm font-semibold text-navy">Ayushman Bharat Digital Mission</h4>
-              <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${clinic?.abdm_connected ? "bg-[#E1F5EE] text-primary" : "bg-red-100 text-red-700"}`}>
-                {clinic?.abdm_connected ? "Connected" : "Not Connected"}
-              </span>
+        {(() => {
+          const plan = (clinic?.plan ?? "Starter").toString();
+          const isStarter = plan.toLowerCase() === "starter";
+          return (
+            <div className="flex flex-col md:flex-row gap-5 items-start">
+              <div className="w-20 h-20 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-lg shrink-0">ABDM</div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <h4 className="text-sm font-semibold text-navy">Ayushman Bharat Digital Mission</h4>
+                  <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${clinic?.abdm_connected ? "bg-[#E1F5EE] text-primary" : "bg-red-100 text-red-700"}`}>
+                    {clinic?.abdm_connected ? "Connected" : "Not Connected"}
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-muted text-navy/70">
+                    {plan} Plan
+                  </span>
+                </div>
+                <p className="text-sm text-muted-foreground mb-3">Connect your clinic to India's national digital health infrastructure.</p>
+                <ul className="space-y-1.5 mb-4">
+                  {[
+                    "Issue and verify digital health IDs (ABHA) for every patient",
+                    "Interoperable health records across clinics, hospitals and labs",
+                    "Stay compliant with NHA data and consent standards",
+                  ].map((t) => (
+                    <li key={t} className="flex items-start gap-2 text-sm text-navy/80">
+                      <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" /> {t}
+                    </li>
+                  ))}
+                </ul>
+
+                {isStarter ? (
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+                    <div className="flex items-start gap-2 mb-2">
+                      <Lock className="w-4 h-4 text-amber-700 mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-sm font-semibold text-amber-900">Available on Pro & Enterprise plans</p>
+                        <p className="text-xs text-amber-800 mt-1">
+                          ABDM Integration is not included in the Starter plan. Upgrade to Pro or Enterprise to issue ABHA IDs and exchange interoperable health records.
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-amber-800 ml-6">
+                      To upgrade, please reach out to your Super Admin or Enterprise Administrator.
+                    </p>
+                    <div className="mt-3 ml-6 flex gap-2">
+                      <button
+                        onClick={() => toast.message("Upgrade request noted", { description: "Please contact your Super Admin or Enterprise Administrator to upgrade your plan." })}
+                        className="px-3 py-1.5 rounded-md bg-primary text-white text-xs font-semibold hover:bg-primary/90"
+                      >
+                        Request Upgrade
+                      </button>
+                      <button
+                        disabled
+                        className="px-3 py-1.5 rounded-md bg-muted text-muted-foreground text-xs font-semibold cursor-not-allowed"
+                      >
+                        Connect to ABDM
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button onClick={() => toast.success("Redirecting to ABDM portal...")} className="px-4 py-2 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90">
+                    Connect to ABDM
+                  </button>
+                )}
+              </div>
             </div>
-            <p className="text-sm text-muted-foreground mb-3">Connect your clinic to India's national digital health infrastructure.</p>
-            <ul className="space-y-1.5 mb-4">
-              {[
-                "Issue and verify digital health IDs (ABHA) for every patient",
-                "Interoperable health records across clinics, hospitals and labs",
-                "Stay compliant with NHA data and consent standards",
-              ].map((t) => (
-                <li key={t} className="flex items-start gap-2 text-sm text-navy/80">
-                  <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 shrink-0" /> {t}
-                </li>
-              ))}
-            </ul>
-            <button onClick={() => toast.success("Redirecting to ABDM portal...")} className="px-4 py-2 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90">
-              Connect to ABDM
-            </button>
-          </div>
-        </div>
+          );
+        })()}
       </section>
 
       <section className="card-surface overflow-hidden">

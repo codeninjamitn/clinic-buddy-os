@@ -15,6 +15,7 @@ export interface Clinic {
   abdm_connected: boolean;
   created_at: string;
   logo_url: string | null;
+  plan: string | null;
 }
 
 export interface Staff {
