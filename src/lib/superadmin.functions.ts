@@ -258,9 +258,16 @@ export const launchClinic = createServerFn({ method: "POST" })
           });
           if (sErr) throw new Error(`${m.name}: ${sErr.message}`);
           if (m.email) {
+            // Hash a single-use token derived from the temp password rather than
+            // storing the plaintext credential. Token expires in 7 days.
+            const tokenBytes = new TextEncoder().encode(`${m.email}:${m.tempPassword}`);
+            const digest = await crypto.subtle.digest("SHA-256", tokenBytes);
+            const tokenHash = Array.from(new Uint8Array(digest))
+              .map((b) => b.toString(16).padStart(2, "0")).join("");
             await supabaseAdmin.from("clinic_invites").insert({
               clinic_id: clinicRow.id, email: m.email, role: m.role,
-              name: m.name, temp_password: m.tempPassword,
+              name: m.name, token_hash: tokenHash,
+              token_expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
             });
           }
           result.teamCount++;
