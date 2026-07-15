@@ -29,6 +29,7 @@ function SettingsPage() {
     setName(clinic.name);
     setPhone(clinic.phone ?? "");
     setGst(clinic.gst_number ?? "");
+    setRegNumber((clinic as { registration_number?: string | null }).registration_number ?? "");
     setAddress(clinic.address ?? "");
   }, [clinic]);
 
