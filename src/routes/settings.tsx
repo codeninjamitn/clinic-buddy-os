@@ -21,6 +21,7 @@ function SettingsPage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [gst, setGst] = useState("");
+  const [regNumber, setRegNumber] = useState("");
   const [address, setAddress] = useState("");
 
   useEffect(() => {
@@ -28,6 +29,7 @@ function SettingsPage() {
     setName(clinic.name);
     setPhone(clinic.phone ?? "");
     setGst(clinic.gst_number ?? "");
+    setRegNumber((clinic as { registration_number?: string | null }).registration_number ?? "");
     setAddress(clinic.address ?? "");
   }, [clinic]);
 
@@ -42,7 +44,7 @@ function SettingsPage() {
   const saveProfile = async () => {
     if (!clinic) return;
     setSavingProfile(true);
-    const { error } = await supabase.from("clinics").update({ name, phone, gst_number: gst, address }).eq("id", clinic.id);
+    const { error } = await supabase.from("clinics").update({ name, phone, gst_number: gst, registration_number: regNumber || null, address }).eq("id", clinic.id);
     setSavingProfile(false);
     if (error) return toast.error(error.message);
     toast.success("Clinic profile saved");
@@ -122,7 +124,7 @@ function SettingsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field label="Clinic Name" value={name} onChange={setName} />
             <Field label="Phone" value={phone} onChange={setPhone} />
-            <Field label="Registration Number" value="KMC-2018-04421" onChange={() => {}} />
+            <Field label="Registration Number" value={regNumber} onChange={setRegNumber} />
             <Field label="GST Number" value={gst} onChange={setGst} />
             <div className="md:col-span-2">
               <Field label="Address" value={address} onChange={setAddress} />
