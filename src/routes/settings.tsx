@@ -21,6 +21,7 @@ function SettingsPage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [gst, setGst] = useState("");
+  const [regNumber, setRegNumber] = useState("");
   const [address, setAddress] = useState("");
 
   useEffect(() => {
