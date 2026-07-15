@@ -44,7 +44,7 @@ function SettingsPage() {
   const saveProfile = async () => {
     if (!clinic) return;
     setSavingProfile(true);
-    const { error } = await supabase.from("clinics").update({ name, phone, gst_number: gst, address }).eq("id", clinic.id);
+    const { error } = await supabase.from("clinics").update({ name, phone, gst_number: gst, registration_number: regNumber || null, address }).eq("id", clinic.id);
     setSavingProfile(false);
     if (error) return toast.error(error.message);
     toast.success("Clinic profile saved");
