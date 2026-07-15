@@ -124,7 +124,7 @@ function SettingsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field label="Clinic Name" value={name} onChange={setName} />
             <Field label="Phone" value={phone} onChange={setPhone} />
-            <Field label="Registration Number" value="KMC-2018-04421" onChange={() => {}} />
+            <Field label="Registration Number" value={regNumber} onChange={setRegNumber} />
             <Field label="GST Number" value={gst} onChange={setGst} />
             <div className="md:col-span-2">
               <Field label="Address" value={address} onChange={setAddress} />
