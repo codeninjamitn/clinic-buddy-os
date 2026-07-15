@@ -77,7 +77,7 @@ India has 700,000+ independent clinics running on paper registers, manual phone 
 
 ## Project Info
 
-**Live App**: [https://clinicos.lovable.app](https://clinicos.lovable.app)
+**Live App**: [https://clinic-buddy-os.lovable.app](https://clinic-buddy-os.lovable.app)
 
 > 👉 **Try it live!** Use any of the test accounts below to explore ClinicOS as each role — no signup needed.
 
