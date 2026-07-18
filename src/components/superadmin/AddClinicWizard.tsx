@@ -169,7 +169,7 @@ export function AddClinicWizard({ onClose }: { onClose: (created: boolean) => vo
         {/* Step content */}
         <div className="min-h-[280px]">
           {step === 0 && <ClinicStep value={clinic} onChange={setClinic} />}
-          {step === 1 && <SpecialityStep all={allSpecs} selected={specialityIds} onChange={setSpecialityIds} />}
+          {step === 1 && <SpecialityStep all={allSpecs} selected={specialityIds} onChange={setSpecialityIds} onCreated={(s) => { setAllSpecs((cur) => [...cur, s]); setSpecialityIds((cur) => (cur.includes(s.id) ? cur : [...cur, s.id])); }} />}
           {step === 2 && <AdminStep value={admin} onChange={setAdmin} />}
           {step === 3 && <TeamStep value={team} onChange={setTeam} />}
           {step === 4 && <InventoryStep value={inventory} onChange={setInventory} />}
