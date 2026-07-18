@@ -54,7 +54,9 @@ const CreateClinicSchema = z.object({
   }),
   team: z.array(TeamMemberSchema).min(1).max(50),
   inventory: z.array(InventoryRowSchema).max(200),
+  specialityIds: z.array(z.string().uuid()).min(1).max(20),
 });
+
 
 export type CreateClinicInput = z.infer<typeof CreateClinicSchema>;
 
