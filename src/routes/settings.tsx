@@ -322,12 +322,32 @@ function AddStaffModal({ clinicId, onClose, onSaved }: { clinicId: string; onClo
   );
 }
 
+function generateTempPassword(len = 12): string {
+  const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const lower = "abcdefghijkmnpqrstuvwxyz";
+  const digits = "23456789";
+  const symbols = "!@#$%^&*";
+  const all = upper + lower + digits + symbols;
+  const pick = (set: string) => set[Math.floor(Math.random() * set.length)];
+  const chars = [pick(upper), pick(lower), pick(digits), pick(symbols)];
+  for (let i = chars.length; i < len; i++) chars.push(pick(all));
+  for (let i = chars.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [chars[i], chars[j]] = [chars[j], chars[i]];
+  }
+  return chars.join("");
+}
+
 function EditStaffModal({ staff, onClose, onSaved }: { staff: Staff; onClose: () => void; onSaved: () => void }) {
   const [name, setName] = useState(staff.name);
   const [email, setEmail] = useState(staff.email ?? "");
   const [phone, setPhone] = useState(staff.phone ?? "");
   const [saving, setSaving] = useState(false);
-  const [resetting, setResetting] = useState<"email" | "sms" | null>(null);
+  const [resetting, setResetting] = useState<"email" | "sms" | "temp" | null>(null);
+  const [tempPw, setTempPw] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [lastSetPw, setLastSetPw] = useState<string | null>(null);
+  const setPasswordFn = useServerFn(setStaffPassword);
 
   const save = async () => {
     if (!name.trim()) return toast.error("Name is required");
@@ -370,9 +390,34 @@ function EditStaffModal({ staff, onClose, onSaved }: { staff: Staff; onClose: ()
     toast.success(`One-time login code sent to ${target}`);
   };
 
+  const applyTempPassword = async () => {
+    const pw = tempPw.trim();
+    if (pw.length < 8) return toast.error("Password must be at least 8 characters");
+    setResetting("temp");
+    try {
+      await setPasswordFn({ data: { staffId: staff.id, password: pw } });
+      setLastSetPw(pw);
+      setShowPw(true);
+      toast.success("Temporary password set. Share it securely with the staff member.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to set password");
+    } finally {
+      setResetting(null);
+    }
+  };
+
+  const copyPw = async (value: string) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      toast.success("Password copied to clipboard");
+    } catch {
+      toast.error("Copy failed — select and copy manually");
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
-      <div className="bg-white rounded-xl w-full max-w-md p-6 animate-scale-in" onClick={(e) => e.stopPropagation()}>
+      <div className="bg-white rounded-xl w-full max-w-md p-6 animate-scale-in max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-lg font-semibold text-navy">Edit Staff Member</h3>
@@ -402,8 +447,8 @@ function EditStaffModal({ staff, onClose, onSaved }: { staff: Staff; onClose: ()
               <KeyRound className="w-4 h-4 text-navy" />
               <h4 className="text-sm font-semibold text-navy">Reset password</h4>
             </div>
-            <p className="text-xs text-muted-foreground mb-3">Send a secure reset link or one-time code so this staff member can set a new password.</p>
-            <div className="grid grid-cols-2 gap-2">
+            <p className="text-xs text-muted-foreground mb-3">Send a secure reset link, a one-time SMS code, or set a temporary password directly.</p>
+            <div className="grid grid-cols-2 gap-2 mb-4">
               <button
                 onClick={resetByEmail}
                 disabled={resetting !== null}
@@ -421,12 +466,68 @@ function EditStaffModal({ staff, onClose, onSaved }: { staff: Staff; onClose: ()
                 SMS code
               </button>
             </div>
+
+            <div className="rounded-lg border border-border bg-muted/30 p-3">
+              <label className="block text-xs font-semibold text-navy mb-1.5">Set a temporary password</label>
+              <div className="flex gap-2 mb-2">
+                <div className="relative flex-1">
+                  <input
+                    type={showPw ? "text" : "password"}
+                    value={tempPw}
+                    onChange={(e) => { setTempPw(e.target.value); setLastSetPw(null); }}
+                    placeholder="Type or generate"
+                    className="w-full px-3 py-2 pr-9 text-sm rounded-md border border-border font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPw((v) => !v)}
+                    className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-navy"
+                    aria-label={showPw ? "Hide password" : "Show password"}
+                  >
+                    {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setTempPw(generateTempPassword()); setShowPw(true); setLastSetPw(null); }}
+                  className="inline-flex items-center gap-1 px-2.5 py-2 rounded-md border border-border text-xs font-semibold text-navy hover:bg-white"
+                  title="Generate strong password"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" /> Generate
+                </button>
+              </div>
+              <button
+                onClick={applyTempPassword}
+                disabled={resetting !== null || tempPw.length < 8}
+                className="w-full py-2 rounded-md bg-navy text-white text-xs font-semibold hover:bg-navy/90 disabled:opacity-60 inline-flex items-center justify-center gap-2"
+              >
+                {resetting === "temp" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <KeyRound className="w-3.5 h-3.5" />}
+                Apply temporary password
+              </button>
+
+              {lastSetPw && (
+                <div className="mt-3 rounded-md border border-primary/30 bg-[#E1F5EE] p-2.5">
+                  <p className="text-[11px] font-semibold text-primary mb-1">Password is now active. Share it securely — it won't be shown again after closing.</p>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 text-xs font-mono bg-white rounded px-2 py-1 border border-border break-all">{lastSetPw}</code>
+                    <button
+                      onClick={() => copyPw(lastSetPw)}
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary text-white text-[11px] font-semibold hover:bg-primary/90"
+                    >
+                      <Copy className="w-3 h-3" /> Copy
+                    </button>
+                  </div>
+                </div>
+              )}
+              <p className="text-[10px] text-muted-foreground mt-2">Ask the staff member to sign in and change this from their account.</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 }
+
 
 function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
