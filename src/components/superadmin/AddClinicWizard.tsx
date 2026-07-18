@@ -350,7 +350,7 @@ function SpecialityStep({ all, selected, onChange, onCreated }: { all: Specialit
 const ICON_CHOICES = ["🩺", "🦷", "🏃", "👶", "🤰", "👁️", "❤️", "🧴", "🧠", "🦴", "🩻", "🧬"];
 const COLOR_CHOICES = ["#0F3E4C", "#14B8A6", "#3B82F6", "#8B5CF6", "#EC4899", "#F59E0B", "#EF4444", "#10B981"];
 
-function NewSpecialityModal({ onClose, onCreated }: { onClose: () => void; onCreated: (s: Speciality) => void }) {
+export function NewSpecialityModal({ onClose, onCreated }: { onClose: () => void; onCreated: (s: Speciality) => void }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [icon, setIcon] = useState(ICON_CHOICES[0]);
