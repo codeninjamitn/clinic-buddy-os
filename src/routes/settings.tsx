@@ -5,7 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useClinic } from "@/lib/auth";
 import { useRole } from "@/context/RoleContext";
 import type { Staff, Role } from "@/types/database";
-import { Upload, Plus, CheckCircle2, X, Loader2, Lock } from "lucide-react";
+import { Upload, Plus, CheckCircle2, X, Loader2, Lock, Star, Trash2 } from "lucide-react";
+import { AddSpecialityModal } from "@/components/modals/AddSpecialityModal";
 
 export const Route = createFileRoute("/settings")({ component: SettingsPage });
 
