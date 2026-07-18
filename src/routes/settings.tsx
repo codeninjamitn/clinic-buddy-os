@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useClinic } from "@/lib/auth";
 import { useRole } from "@/context/RoleContext";
 import type { Staff, Role } from "@/types/database";
-import { Upload, Plus, CheckCircle2, X, Loader2, Lock, Star, Trash2 } from "lucide-react";
+import { Upload, Plus, CheckCircle2, X, Loader2, Lock, Star, Trash2, Pencil, Mail, Smartphone, KeyRound } from "lucide-react";
 import { AddSpecialityModal } from "@/components/modals/AddSpecialityModal";
 
 export const Route = createFileRoute("/settings")({ component: SettingsPage });
@@ -17,6 +17,7 @@ function SettingsPage() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [staff, setStaff] = useState<Staff[]>([]);
   const [addOpen, setAddOpen] = useState(false);
+  const [editing, setEditing] = useState<Staff | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
 
   const [name, setName] = useState("");
@@ -223,8 +224,10 @@ function SettingsPage() {
             <tr>
               <th className="text-left px-6 py-3">Name</th>
               <th className="text-left px-6 py-3">Role</th>
+              <th className="text-left px-6 py-3">Email</th>
               <th className="text-left px-6 py-3">Phone</th>
               <th className="text-right px-6 py-3">Status</th>
+              <th className="text-right px-6 py-3">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -232,6 +235,7 @@ function SettingsPage() {
               <tr key={s.id} className="border-t border-border hover:bg-[#E1F5EE]/40 transition-colors">
                 <td className="px-6 py-3 font-medium text-navy">{s.name}</td>
                 <td className="px-6 py-3 text-muted-foreground">{s.role}</td>
+                <td className="px-6 py-3 text-muted-foreground">{s.email ?? "—"}</td>
                 <td className="px-6 py-3 text-muted-foreground">{s.phone ?? "—"}</td>
                 <td className="px-6 py-3">
                   <div className="flex justify-end">
@@ -243,6 +247,14 @@ function SettingsPage() {
                     </button>
                   </div>
                 </td>
+                <td className="px-6 py-3 text-right">
+                  <button
+                    onClick={() => setEditing(s)}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-semibold text-primary hover:bg-primary/10"
+                  >
+                    <Pencil className="w-3.5 h-3.5" /> Edit
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -250,6 +262,7 @@ function SettingsPage() {
       </section>
 
       {addOpen && clinic && <AddStaffModal clinicId={clinic.id} onClose={() => setAddOpen(false)} onSaved={() => { setAddOpen(false); loadStaff(); }} />}
+      {editing && <EditStaffModal staff={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); loadStaff(); }} />}
     </div>
   );
 }
@@ -300,6 +313,112 @@ function AddStaffModal({ clinicId, onClose, onSaved }: { clinicId: string; onClo
           <button onClick={submit} disabled={saving} className="w-full py-2.5 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90 disabled:opacity-60 inline-flex items-center justify-center gap-2">
             {saving && <Loader2 className="w-4 h-4 animate-spin" />} Save Staff
           </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EditStaffModal({ staff, onClose, onSaved }: { staff: Staff; onClose: () => void; onSaved: () => void }) {
+  const [name, setName] = useState(staff.name);
+  const [email, setEmail] = useState(staff.email ?? "");
+  const [phone, setPhone] = useState(staff.phone ?? "");
+  const [saving, setSaving] = useState(false);
+  const [resetting, setResetting] = useState<"email" | "sms" | null>(null);
+
+  const save = async () => {
+    if (!name.trim()) return toast.error("Name is required");
+    setSaving(true);
+    const { error } = await supabase
+      .from("staff")
+      .update({ name: name.trim(), email: email.trim() || null, phone: phone.trim() || null })
+      .eq("id", staff.id);
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success("Staff details updated");
+    onSaved();
+  };
+
+  const resetByEmail = async () => {
+    const target = email.trim();
+    if (!target) return toast.error("Add an email address before sending a reset link");
+    setResetting("email");
+    const { error } = await supabase.auth.resetPasswordForEmail(target, {
+      redirectTo: `${window.location.origin}/login`,
+    });
+    setResetting(null);
+    if (error) return toast.error(error.message);
+    toast.success(`Password reset link sent to ${target}`);
+  };
+
+  const resetBySms = async () => {
+    const target = phone.trim();
+    if (!target) return toast.error("Add a phone number before sending an OTP");
+    if (!/^\+\d{8,15}$/.test(target)) return toast.error("Phone must be in E.164 format (e.g. +919812345678)");
+    setResetting("sms");
+    const { error } = await supabase.auth.signInWithOtp({ phone: target });
+    setResetting(null);
+    if (error) {
+      if (/sms|phone|provider|not enabled|unsupported/i.test(error.message)) {
+        return toast.error("SMS reset isn't enabled yet. Ask your Super Admin to configure an SMS provider.");
+      }
+      return toast.error(error.message);
+    }
+    toast.success(`One-time login code sent to ${target}`);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
+      <div className="bg-white rounded-xl w-full max-w-md p-6 animate-scale-in" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-semibold text-navy">Edit Staff Member</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">{staff.role}</p>
+          </div>
+          <button onClick={onClose} className="p-1 hover:bg-muted rounded"><X className="w-5 h-5" /></button>
+        </div>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Name</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} className="w-full px-3 py-2 text-sm rounded-md border border-border" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Email</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-3 py-2 text-sm rounded-md border border-border" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Phone</label>
+            <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+919812345678" className="w-full px-3 py-2 text-sm rounded-md border border-border" />
+          </div>
+          <button onClick={save} disabled={saving} className="w-full py-2.5 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90 disabled:opacity-60 inline-flex items-center justify-center gap-2">
+            {saving && <Loader2 className="w-4 h-4 animate-spin" />} Save Changes
+          </button>
+
+          <div className="pt-4 mt-2 border-t border-border">
+            <div className="flex items-center gap-1.5 mb-2">
+              <KeyRound className="w-4 h-4 text-navy" />
+              <h4 className="text-sm font-semibold text-navy">Reset password</h4>
+            </div>
+            <p className="text-xs text-muted-foreground mb-3">Send a secure reset link or one-time code so this staff member can set a new password.</p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={resetByEmail}
+                disabled={resetting !== null}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border border-border text-xs font-semibold text-navy hover:bg-muted disabled:opacity-60"
+              >
+                {resetting === "email" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />}
+                Email link
+              </button>
+              <button
+                onClick={resetBySms}
+                disabled={resetting !== null}
+                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border border-border text-xs font-semibold text-navy hover:bg-muted disabled:opacity-60"
+              >
+                {resetting === "sms" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Smartphone className="w-3.5 h-3.5" />}
+                SMS code
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
