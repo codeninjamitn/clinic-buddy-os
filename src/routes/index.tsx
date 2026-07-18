@@ -303,10 +303,10 @@ function Footer() {
             </p>
             <div className="mt-5 flex items-center gap-1.5 text-sm">
               <span className="text-muted-foreground">A product of</span>
-              <span className="font-semibold text-navy">Ramaiah HealthTech</span>
+              <span className="font-semibold text-navy">Nirnay Labs</span>
             </div>
             <div className="mt-6 text-xs text-muted-foreground leading-relaxed">
-              © {year} Ramaiah HealthTech.<br />All rights reserved.
+              © {year} Nirnay Labs.<br />All rights reserved.
             </div>
           </div>
 
