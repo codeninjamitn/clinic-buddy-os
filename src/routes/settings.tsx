@@ -314,3 +314,75 @@ function Field({ label, value, onChange }: { label: string; value: string; onCha
     </div>
   );
 }
+
+function SpecialitiesSection() {
+  const { clinic, specialities, refresh } = useClinic();
+  const [addOpen, setAddOpen] = useState(false);
+  if (!clinic) return null;
+
+  const setPrimary = async (id: string) => {
+    // Clear any previous primary, then set the chosen row.
+    await supabase.from("clinic_specialities").update({ is_primary: false }).eq("clinic_id", clinic.id);
+    const { error } = await supabase.from("clinic_specialities").update({ is_primary: true }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Primary speciality updated");
+    refresh();
+  };
+
+  const remove = async (id: string, name: string) => {
+    if (specialities.length <= 1) return toast.error("Clinic must have at least one speciality");
+    if (!confirm(`Remove ${name} from this clinic?`)) return;
+    const { error } = await supabase.from("clinic_specialities").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success(`${name} removed`);
+    refresh();
+  };
+
+  return (
+    <section className="card-surface p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h3 className="text-base font-semibold text-navy">Specialities</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">Disciplines practised at this clinic. The primary speciality drives the default consultation form.</p>
+        </div>
+        <button onClick={() => setAddOpen(true)} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90">
+          <Plus className="w-4 h-4" /> Add Speciality
+        </button>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        {specialities.map((cs) => {
+          const s = cs.specialities;
+          if (!s) return null;
+          return (
+            <div key={cs.id} className="rounded-lg border border-border p-3 flex items-start gap-3" style={{ borderLeftWidth: 4, borderLeftColor: s.color }}>
+              <div className="text-2xl">{s.icon}</div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <div className="font-semibold text-navy text-sm truncate">{s.name}</div>
+                  {cs.is_primary && (
+                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-primary/10 text-primary inline-flex items-center gap-0.5">
+                      <Star className="w-2.5 h-2.5" /> PRIMARY
+                    </span>
+                  )}
+                </div>
+                {s.description && <p className="text-[11px] text-muted-foreground mt-0.5">{s.description}</p>}
+                <div className="flex gap-3 mt-2">
+                  {!cs.is_primary && (
+                    <button onClick={() => setPrimary(cs.id)} className="text-[11px] font-semibold text-primary hover:underline inline-flex items-center gap-0.5">
+                      <Star className="w-3 h-3" /> Make primary
+                    </button>
+                  )}
+                  <button onClick={() => remove(cs.id, s.name)} className="text-[11px] font-semibold text-red-600 hover:underline inline-flex items-center gap-0.5">
+                    <Trash2 className="w-3 h-3" /> Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <AddSpecialityModal isOpen={addOpen} onClose={() => setAddOpen(false)} onSaved={() => { setAddOpen(false); refresh(); }} />
+    </section>
+  );
+}
+
