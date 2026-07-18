@@ -10,7 +10,7 @@ import type { Permission } from "@/lib/permissions";
 import { ROLE_BADGE } from "@/lib/permissions";
 
 const nav: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean; perm?: Permission }[] = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/appointments", label: "Appointments", icon: Calendar, perm: "view_appointments" },
   { to: "/patients", label: "Patients", icon: Users, perm: "view_patients" },
   { to: "/billing", label: "Billing", icon: Receipt, perm: "view_billing" },
