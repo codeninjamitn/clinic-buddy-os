@@ -374,21 +374,6 @@ function EditStaffModal({ staff, onClose, onSaved }: { staff: Staff; onClose: ()
     toast.success(`Password reset link sent to ${target}`);
   };
 
-  const resetBySms = async () => {
-    const target = phone.trim();
-    if (!target) return toast.error("Add a phone number before sending an OTP");
-    if (!/^\+\d{8,15}$/.test(target)) return toast.error("Phone must be in E.164 format (e.g. +919812345678)");
-    setResetting("sms");
-    const { error } = await supabase.auth.signInWithOtp({ phone: target });
-    setResetting(null);
-    if (error) {
-      if (/sms|phone|provider|not enabled|unsupported/i.test(error.message)) {
-        return toast.error("SMS reset isn't enabled yet. Ask your Super Admin to configure an SMS provider.");
-      }
-      return toast.error(error.message);
-    }
-    toast.success(`One-time login code sent to ${target}`);
-  };
 
   const applyTempPassword = async () => {
     const pw = tempPw.trim();
