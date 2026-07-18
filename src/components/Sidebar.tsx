@@ -28,13 +28,20 @@ export function Sidebar() {
   return (
     <aside className="fixed inset-y-0 left-0 w-60 bg-navy text-navy-foreground flex flex-col z-20">
       <div className="h-16 flex items-center gap-2.5 px-5 border-b border-white/10">
-        <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
+        <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center overflow-hidden shrink-0">
           <Stethoscope className="w-5 h-5 text-white" />
         </div>
-        <div>
-          <div className="font-bold text-[15px] leading-tight">ClinicOS</div>
+        <div className="min-w-0 flex-1">
+          <div className="font-bold text-[15px] leading-tight truncate">{clinic?.name ?? "ClinicOS"}</div>
           <div className="text-[11px] text-white/60 leading-tight">Clinic Management</div>
         </div>
+        {clinic?.logo_url && (
+          <img
+            src={clinic.logo_url}
+            alt={`${clinic.name} logo`}
+            className="w-9 h-9 rounded-md object-cover bg-white/10 shrink-0"
+          />
+        )}
       </div>
       {role && (
         <div className="px-5 py-3 border-b border-white/10">
@@ -86,8 +93,19 @@ export function Sidebar() {
           );
         })}
       </nav>
-      <div className="p-4 border-t border-white/10 text-[11px] text-white/50">
-        v1.0 · © {clinic?.name ?? "ClinicOS"}
+      <div className="p-4 border-t border-white/10 text-[11px] text-white/50 flex items-center gap-2">
+        {clinic?.logo_url ? (
+          <img
+            src={clinic.logo_url}
+            alt={`${clinic.name} logo`}
+            className="w-6 h-6 rounded object-cover bg-white/10 shrink-0"
+          />
+        ) : (
+          <div className="w-6 h-6 rounded bg-primary/80 flex items-center justify-center shrink-0">
+            <Stethoscope className="w-3.5 h-3.5 text-white" />
+          </div>
+        )}
+        <span className="truncate">v1.0 · © {clinic?.name ?? "ClinicOS"}</span>
       </div>
     </aside>
   );
