@@ -285,20 +285,81 @@ function CTA() {
 }
 
 function Footer() {
+  const year = new Date().getFullYear();
   return (
-    <footer className="border-t border-border py-10">
-      <div className="max-w-6xl mx-auto px-5 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
-            <Stethoscope className="w-4 h-4 text-white" />
+    <footer className="border-t border-border bg-[#F4FAFB]">
+      <div className="max-w-6xl mx-auto px-5 py-14">
+        <div className="grid gap-10 md:gap-8 md:grid-cols-12">
+          {/* Brand */}
+          <div className="md:col-span-4">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold tracking-wider text-white bg-primary px-2.5 py-1 rounded-md">
+              CLINICOS
+            </span>
+            <div className="mt-4 text-xl font-bold text-navy leading-snug">
+              Your Clinic,<br />Beautifully Organised.
+            </div>
+            <p className="mt-3 text-sm text-muted-foreground max-w-xs">
+              Modern clinic management for independent Indian doctors and diagnostic labs.
+            </p>
+            <div className="mt-5 flex items-center gap-1.5 text-sm">
+              <span className="text-muted-foreground">A product of</span>
+              <span className="font-semibold text-navy">Ramaiah HealthTech</span>
+            </div>
+            <div className="mt-6 text-xs text-muted-foreground leading-relaxed">
+              © {year} Ramaiah HealthTech.<br />All rights reserved.
+            </div>
           </div>
-          <span className="font-semibold text-navy">ClinicOS</span>
-          <span>· © {new Date().getFullYear()}</span>
+
+          {/* Navigate */}
+          <div className="md:col-span-2">
+            <div className="text-xs font-bold tracking-wider text-navy uppercase">Navigate</div>
+            <ul className="mt-4 space-y-2.5 text-sm">
+              <li><a href="#features" className="text-muted-foreground hover:text-primary transition-colors">Features</a></li>
+              <li><a href="#modules" className="text-muted-foreground hover:text-primary transition-colors">Modules</a></li>
+              <li><a href="#for" className="text-muted-foreground hover:text-primary transition-colors">Who it's for</a></li>
+              <li><Link to="/login" className="text-muted-foreground hover:text-primary transition-colors">Sign in</Link></li>
+              <li><Link to="/login" className="text-muted-foreground hover:text-primary transition-colors">Get started</Link></li>
+            </ul>
+          </div>
+
+          {/* Legal */}
+          <div className="md:col-span-3">
+            <div className="text-xs font-bold tracking-wider text-navy uppercase">Legal</div>
+            <ul className="mt-4 space-y-2.5 text-sm">
+              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Privacy Policy</a></li>
+              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Terms of Service</a></li>
+              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Data Processing (DPDP)</a></li>
+              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Contact Us</a></li>
+              <li><a href="#" className="text-muted-foreground hover:text-primary transition-colors">Submit feedback</a></li>
+            </ul>
+          </div>
+
+          {/* Compliance */}
+          <div className="md:col-span-3">
+            <div className="text-xs font-bold tracking-wider text-navy uppercase">Compliance</div>
+            <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
+              ABDM &amp; ABHA ready.<br />
+              DPDP Act 2023 aligned.<br />
+              Data hosted in India.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-md border border-border bg-white text-navy">ABDM</span>
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-md border border-border bg-white text-navy">DPDP</span>
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-md border border-border bg-white text-navy">ISO 27001</span>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center gap-5">
-          <a href="#features" className="hover:text-navy">Features</a>
-          <a href="#modules" className="hover:text-navy">Modules</a>
-          <Link to="/login" className="hover:text-navy">Sign in</Link>
+
+        <div className="mt-12 pt-6 border-t border-border flex flex-col md:flex-row md:items-center md:justify-between gap-3 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
+              <Stethoscope className="w-3.5 h-3.5 text-white" />
+            </div>
+            <span>ClinicOS · Made with <span className="text-red-500">❤</span> from Bengaluru, India for clinics across Bharat.</span>
+          </div>
+          <div className="md:text-right">
+            Information shown is for clinic management only and does not constitute medical advice.
+          </div>
         </div>
       </div>
     </footer>
