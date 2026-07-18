@@ -22,7 +22,7 @@ const nav: { to: string; label: string; icon: typeof LayoutDashboard; exact?: bo
 export function Sidebar() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { can, role, staffName } = useRole();
-  const { clinic } = useClinic();
+  const { clinic, specialities, primarySpeciality } = useClinic();
   const items = nav.filter((n) => !n.perm || can(n.perm));
 
   return (
