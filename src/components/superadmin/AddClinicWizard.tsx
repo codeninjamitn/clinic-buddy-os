@@ -50,6 +50,19 @@ export function AddClinicWizard({ onClose }: { onClose: (created: boolean) => vo
   const [admin, setAdmin] = useState<AdminForm>({ name: "", email: "", phone: "", password: rndPw() });
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [inventory, setInventory] = useState<InventoryRow[]>([]);
+  const [allSpecs, setAllSpecs] = useState<Speciality[]>([]);
+  const [specialityIds, setSpecialityIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    supabase.from("specialities").select("*").order("sort_order").then(({ data, error }) => {
+      if (error) { toast.error("Failed to load specialities"); return; }
+      const rows = (data ?? []) as Speciality[];
+      setAllSpecs(rows);
+      const general = rows.find((r) => r.slug === "general");
+      if (general) setSpecialityIds((cur) => (cur.length ? cur : [general.id]));
+    });
+  }, []);
+
 
   const validateStep = (): string | null => {
     if (step === 0) {
