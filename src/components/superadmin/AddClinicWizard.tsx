@@ -119,8 +119,10 @@ export function AddClinicWizard({ onClose }: { onClose: (created: boolean) => vo
             ...r,
             expiry_date: r.expiry_date || null,
           })),
+          specialityIds,
         },
       });
+
       setResult(r);
       if (r.failedStep) toast.error(`Failed at ${r.failedStep}: ${r.error}`);
       else toast.success("Clinic launched");
