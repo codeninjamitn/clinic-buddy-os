@@ -275,12 +275,22 @@ function SettingsPage() {
                   </div>
                 </td>
                 <td className="px-6 py-3 text-right">
-                  <button
-                    onClick={() => setEditing(s)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-semibold text-primary hover:bg-primary/10"
-                  >
-                    <Pencil className="w-3.5 h-3.5" /> Edit
-                  </button>
+                  <div className="inline-flex items-center gap-1 justify-end">
+                    <button
+                      onClick={() => setEditing(s)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-semibold text-primary hover:bg-primary/10"
+                    >
+                      <Pencil className="w-3.5 h-3.5" /> Edit
+                    </button>
+                    <button
+                      onClick={() => removeStaff(s)}
+                      disabled={removingId === s.id || s.id === staffId}
+                      title={s.id === staffId ? "You cannot remove your own account" : "Remove from clinic and revoke access"}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {removingId === s.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />} Remove
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
