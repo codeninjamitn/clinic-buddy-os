@@ -83,6 +83,28 @@ function SettingsPage() {
     loadStaff();
   };
 
+  const removeStaff = async (s: Staff) => {
+    if (s.id === staffId) return toast.error("You cannot remove your own account.");
+    const ok = confirm(
+      `Remove ${s.name} from this clinic?\n\nThis deletes their staff record and revokes their sign-in access if this was their only clinic. This cannot be undone.`
+    );
+    if (!ok) return;
+    setRemovingId(s.id);
+    try {
+      const res = await removeStaffFn({ data: { staffId: s.id, revokeAuth: true } });
+      toast.success(
+        res?.authRevoked
+          ? `${s.name} removed and sign-in access revoked`
+          : `${s.name} removed from clinic`
+      );
+      loadStaff();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to remove staff");
+    } finally {
+      setRemovingId(null);
+    }
+  };
+
   if (!can("access_settings")) {
     return (
       <div className="max-w-[1100px] mx-auto animate-fade-in">
