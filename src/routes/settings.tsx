@@ -432,23 +432,15 @@ function EditStaffModal({ staff, onClose, onSaved }: { staff: Staff; onClose: ()
               <KeyRound className="w-4 h-4 text-navy" />
               <h4 className="text-sm font-semibold text-navy">Reset password</h4>
             </div>
-            <p className="text-xs text-muted-foreground mb-3">Send a secure reset link, a one-time SMS code, or set a temporary password directly.</p>
-            <div className="grid grid-cols-2 gap-2 mb-4">
+            <p className="text-xs text-muted-foreground mb-3">Send a secure reset link to the staff member's email, or set a temporary password directly.</p>
+            <div className="mb-4">
               <button
                 onClick={resetByEmail}
                 disabled={resetting !== null}
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border border-border text-xs font-semibold text-navy hover:bg-muted disabled:opacity-60"
+                className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border border-border text-xs font-semibold text-navy hover:bg-muted disabled:opacity-60"
               >
                 {resetting === "email" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />}
-                Email link
-              </button>
-              <button
-                onClick={resetBySms}
-                disabled={resetting !== null}
-                className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-md border border-border text-xs font-semibold text-navy hover:bg-muted disabled:opacity-60"
-              >
-                {resetting === "sms" ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Smartphone className="w-3.5 h-3.5" />}
-                SMS code
+                Send reset link by email
               </button>
             </div>
 
