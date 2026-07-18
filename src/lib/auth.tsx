@@ -131,6 +131,5 @@ export function ClinicProvider({ children, clinicId }: { children: ReactNode; cl
 }
 
 export const useClinic = () => useContext(ClinicContext);
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type _KeepClinicImport = _C;
+
 
