@@ -17,6 +17,7 @@ function SettingsPage() {
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [staff, setStaff] = useState<Staff[]>([]);
   const [addOpen, setAddOpen] = useState(false);
+  const [editing, setEditing] = useState<Staff | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
 
   const [name, setName] = useState("");
