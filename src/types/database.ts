@@ -1,4 +1,24 @@
-export type Role = "Doctor" | "Receptionist" | "Lab Technician" | "Pharmacist";
+export type Role = "Doctor" | "Receptionist" | "Lab Technician" | "Pharmacist" | "Admin";
+
+export interface Speciality {
+  id: string;
+  name: string;
+  slug: string;
+  icon: string;
+  color: string;
+  description: string | null;
+  sort_order: number;
+}
+
+export interface ClinicSpeciality {
+  id: string;
+  clinic_id: string;
+  speciality_id: string;
+  is_primary: boolean;
+  added_at: string;
+  specialities?: Speciality | null;
+}
+
 export type ApptType = "General Checkup" | "Follow-up" | "Procedure" | "Lab Consultation" | "Emergency";
 export type ApptStatus = "Confirmed" | "Pending" | "Completed" | "Cancelled";
 export type InvoiceStatus = "Paid" | "Pending" | "Overdue" | "Draft";
