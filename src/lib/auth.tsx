@@ -76,8 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export const useAuth = () => useContext(AuthContext);
 
 // ---------- Clinic ----------
-import type { Clinic as _C } from "@/types/database";
-import type { ClinicSpeciality, Speciality } from "@/types/database";
+
 
 interface ClinicCtx {
   clinic: Clinic | null;
