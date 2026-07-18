@@ -45,6 +45,26 @@ export function Sidebar() {
           </span>
         </div>
       )}
+      {specialities.length > 0 && (
+        <div className="px-5 py-2.5 border-b border-white/10">
+          <div className="text-[10px] text-white/40 uppercase tracking-wide mb-1.5">Specialities</div>
+          <div className="flex flex-wrap gap-1">
+            {specialities.map((cs) => {
+              const s = cs.specialities;
+              if (!s) return null;
+              const isPrimary = s.id === primarySpeciality?.id;
+              return (
+                <span key={cs.id} title={s.name}
+                  className={`inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded ${isPrimary ? "ring-1 ring-white/40" : ""}`}
+                  style={{ background: `${s.color}33`, color: "#FFFFFF" }}>
+                  <span>{s.icon}</span>
+                  <span className="hidden xl:inline">{s.name}</span>
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
       <nav className="flex-1 py-4 px-3 space-y-1">
         {items.map((item) => {
           const active = item.exact ? path === item.to : path.startsWith(item.to);
