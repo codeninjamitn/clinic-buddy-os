@@ -54,7 +54,9 @@ const CreateClinicSchema = z.object({
   }),
   team: z.array(TeamMemberSchema).min(1).max(50),
   inventory: z.array(InventoryRowSchema).max(200),
+  specialityIds: z.array(z.string().uuid()).min(1).max(20),
 });
+
 
 export type CreateClinicInput = z.infer<typeof CreateClinicSchema>;
 
@@ -219,6 +221,17 @@ export const launchClinic = createServerFn({ method: "POST" })
       }).select().single();
       if (cErr || !clinicRow) { result.failedStep = "clinic"; result.error = cErr?.message ?? "Failed"; return result; }
       result.clinicId = clinicRow.id;
+
+      // Attach specialities (first = primary)
+      const specRows = data.specialityIds.map((id, idx) => ({
+        clinic_id: clinicRow.id,
+        speciality_id: id,
+        is_primary: idx === 0,
+      }));
+      const { error: spErr } = await supabaseAdmin.from("clinic_specialities").insert(specRows);
+      if (spErr) { result.failedStep = "clinic"; result.error = `specialities: ${spErr.message}`; return result; }
+
+
 
       // STEP 2: admin
       try {

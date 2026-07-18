@@ -1,13 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { X, Loader2, Plus, Trash2, CheckCircle2, ArrowLeft, ArrowRight, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { launchClinic } from "@/lib/superadmin.functions";
 import { INDIAN_STATES } from "@/lib/indian-states";
+import { supabase } from "@/integrations/supabase/client";
+import { SpecialityPicker } from "@/components/SpecialityPicker";
+import type { Speciality } from "@/types/database";
 import { saCard, saInput, saLabel } from "./tokens";
 
 type Plan = "starter" | "pro" | "enterprise";
 type TeamRole = "Doctor" | "Receptionist" | "Lab Technician" | "Pharmacist";
+
 
 interface ClinicForm {
   name: string; address_line1: string; address_line2: string;
@@ -24,7 +28,7 @@ interface InventoryRow {
   expiry_date: string; unit_price: number;
 }
 
-const STEPS = ["Clinic Details", "Admin Account", "Team Members", "Initial Inventory", "Review & Launch"] as const;
+const STEPS = ["Clinic Details", "Specialities", "Admin Account", "Team Members", "Initial Inventory", "Review & Launch"] as const;
 
 function rndPw(len = 16) {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$%&!";
@@ -46,6 +50,19 @@ export function AddClinicWizard({ onClose }: { onClose: (created: boolean) => vo
   const [admin, setAdmin] = useState<AdminForm>({ name: "", email: "", phone: "", password: rndPw() });
   const [team, setTeam] = useState<TeamMember[]>([]);
   const [inventory, setInventory] = useState<InventoryRow[]>([]);
+  const [allSpecs, setAllSpecs] = useState<Speciality[]>([]);
+  const [specialityIds, setSpecialityIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    supabase.from("specialities").select("*").order("sort_order").then(({ data, error }) => {
+      if (error) { toast.error("Failed to load specialities"); return; }
+      const rows = (data ?? []) as Speciality[];
+      setAllSpecs(rows);
+      const general = rows.find((r) => r.slug === "general");
+      if (general) setSpecialityIds((cur) => (cur.length ? cur : [general.id]));
+    });
+  }, []);
+
 
   const validateStep = (): string | null => {
     if (step === 0) {
@@ -57,12 +74,15 @@ export function AddClinicWizard({ onClose }: { onClose: (created: boolean) => vo
       if (!clinic.phone) return "Clinic phone is required";
     }
     if (step === 1) {
+      if (specialityIds.length === 0) return "Select at least one speciality";
+    }
+    if (step === 2) {
       if (!admin.name) return "Admin name is required";
       if (!admin.email || !/^[^@]+@[^@]+\.[^@]+$/.test(admin.email)) return "Valid admin email is required";
       if (!admin.phone) return "Admin phone is required";
       if (admin.password.length < 8) return "Password must be at least 8 characters";
     }
-    if (step === 2) {
+    if (step === 3) {
       for (const m of team) {
         if (!m.name) return "All team members need a name";
         if (!m.phone) return `${m.name}: phone required`;
@@ -70,12 +90,13 @@ export function AddClinicWizard({ onClose }: { onClose: (created: boolean) => vo
         if (m.email && m.tempPassword.length < 8) return `${m.name}: password ≥ 8 chars`;
       }
     }
-    if (step === 3) {
+    if (step === 4) {
       for (const r of inventory) {
         if (!r.medicine_name) return "Medicine name required for all inventory rows";
         if (!r.unit) return `${r.medicine_name}: unit required`;
       }
     }
+
     return null;
   };
 
@@ -98,8 +119,10 @@ export function AddClinicWizard({ onClose }: { onClose: (created: boolean) => vo
             ...r,
             expiry_date: r.expiry_date || null,
           })),
+          specialityIds,
         },
       });
+
       setResult(r);
       if (r.failedStep) toast.error(`Failed at ${r.failedStep}: ${r.error}`);
       else toast.success("Clinic launched");
@@ -146,11 +169,13 @@ export function AddClinicWizard({ onClose }: { onClose: (created: boolean) => vo
         {/* Step content */}
         <div className="min-h-[280px]">
           {step === 0 && <ClinicStep value={clinic} onChange={setClinic} />}
-          {step === 1 && <AdminStep value={admin} onChange={setAdmin} />}
-          {step === 2 && <TeamStep value={team} onChange={setTeam} />}
-          {step === 3 && <InventoryStep value={inventory} onChange={setInventory} />}
-          {step === 4 && <ReviewStep clinic={clinic} admin={admin} team={team} inventory={inventory} />}
+          {step === 1 && <SpecialityStep all={allSpecs} selected={specialityIds} onChange={setSpecialityIds} />}
+          {step === 2 && <AdminStep value={admin} onChange={setAdmin} />}
+          {step === 3 && <TeamStep value={team} onChange={setTeam} />}
+          {step === 4 && <InventoryStep value={inventory} onChange={setInventory} />}
+          {step === 5 && <ReviewStep clinic={clinic} admin={admin} team={team} inventory={inventory} specialityIds={specialityIds} allSpecs={allSpecs} />}
         </div>
+
 
         {/* Footer */}
         <div className="flex items-center justify-between mt-6 pt-4" style={{ borderTop: "1px solid #1A4055" }}>
@@ -291,7 +316,22 @@ function InventoryStep({ value, onChange }: { value: InventoryRow[]; onChange: (
   );
 }
 
-function ReviewStep({ clinic, admin, team, inventory }: { clinic: ClinicForm; admin: AdminForm; team: TeamMember[]; inventory: InventoryRow[] }) {
+function SpecialityStep({ all, selected, onChange }: { all: Speciality[]; selected: string[]; onChange: (ids: string[]) => void }) {
+  if (all.length === 0) {
+    return <p className="text-[13px]" style={{ color: "#7FBBC5" }}>Loading specialities…</p>;
+  }
+  return (
+    <div className="space-y-3">
+      <p className="text-[12px]" style={{ color: "#7FBBC5" }}>
+        Select the disciplines this clinic offers. The first one you pick is the primary speciality.
+      </p>
+      <SpecialityPicker dark all={all} selected={selected} onChange={onChange} />
+    </div>
+  );
+}
+
+function ReviewStep({ clinic, admin, team, inventory, specialityIds, allSpecs }: { clinic: ClinicForm; admin: AdminForm; team: TeamMember[]; inventory: InventoryRow[]; specialityIds: string[]; allSpecs: Speciality[] }) {
+  const specs = specialityIds.map((id) => allSpecs.find((s) => s.id === id)).filter(Boolean) as Speciality[];
   return (
     <div className="space-y-4 text-[13px]">
       <Section title="Clinic">
@@ -300,7 +340,11 @@ function ReviewStep({ clinic, admin, team, inventory }: { clinic: ClinicForm; ad
         <p style={{ color: "#7FBBC5" }}>{clinic.phone} {clinic.email && `· ${clinic.email}`}</p>
         <p style={{ color: "#7FBBC5" }}>Plan: <b style={{ color: "#02C39A" }}>{clinic.plan}</b> · ABDM: {clinic.abdm_connected ? "Yes" : "No"}</p>
       </Section>
+      <Section title={`Specialities (${specs.length})`}>
+        <p style={{ color: "#7FBBC5" }}>{specs.map((s, i) => `${s.icon} ${s.name}${i === 0 ? " (primary)" : ""}`).join(" · ") || "None"}</p>
+      </Section>
       <Section title="Admin"><p>{admin.name} — {admin.email} — {admin.phone}</p></Section>
+
       <Section title={`Team (${team.length})`}>
         {team.length === 0 ? <p style={{ color: "#7FBBC5" }}>No team members.</p> : team.map((m, i) => (
           <p key={i} style={{ color: "#7FBBC5" }}>• {m.name} — {m.role} {m.email && `(${m.email})`}</p>
