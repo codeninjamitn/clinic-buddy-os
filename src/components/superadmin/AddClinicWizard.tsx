@@ -1,13 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { X, Loader2, Plus, Trash2, CheckCircle2, ArrowLeft, ArrowRight, Copy } from "lucide-react";
 import { toast } from "sonner";
 import { launchClinic } from "@/lib/superadmin.functions";
 import { INDIAN_STATES } from "@/lib/indian-states";
+import { supabase } from "@/integrations/supabase/client";
+import { SpecialityPicker } from "@/components/SpecialityPicker";
+import type { Speciality } from "@/types/database";
 import { saCard, saInput, saLabel } from "./tokens";
 
 type Plan = "starter" | "pro" | "enterprise";
 type TeamRole = "Doctor" | "Receptionist" | "Lab Technician" | "Pharmacist";
+
 
 interface ClinicForm {
   name: string; address_line1: string; address_line2: string;
