@@ -93,8 +93,19 @@ export function Sidebar() {
           );
         })}
       </nav>
-      <div className="p-4 border-t border-white/10 text-[11px] text-white/50">
-        v1.0 · © {clinic?.name ?? "ClinicOS"}
+      <div className="p-4 border-t border-white/10 text-[11px] text-white/50 flex items-center gap-2">
+        {clinic?.logo_url ? (
+          <img
+            src={clinic.logo_url}
+            alt={`${clinic.name} logo`}
+            className="w-6 h-6 rounded object-cover bg-white/10 shrink-0"
+          />
+        ) : (
+          <div className="w-6 h-6 rounded bg-primary/80 flex items-center justify-center shrink-0">
+            <Stethoscope className="w-3.5 h-3.5 text-white" />
+          </div>
+        )}
+        <span className="truncate">v1.0 · © {clinic?.name ?? "ClinicOS"}</span>
       </div>
     </aside>
   );
