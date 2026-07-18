@@ -28,7 +28,7 @@ interface InventoryRow {
   expiry_date: string; unit_price: number;
 }
 
-const STEPS = ["Clinic Details", "Admin Account", "Team Members", "Initial Inventory", "Review & Launch"] as const;
+const STEPS = ["Clinic Details", "Specialities", "Admin Account", "Team Members", "Initial Inventory", "Review & Launch"] as const;
 
 function rndPw(len = 16) {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#$%&!";
