@@ -1,5 +1,5 @@
-import { Outlet, useRouterState } from "@tanstack/react-router";
-import { useState } from "react";
+import { Outlet, useRouterState, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 import { Toaster } from "@/components/ui/sonner";
@@ -8,21 +8,34 @@ import { AuthProvider, ClinicProvider, useAuth } from "@/lib/auth";
 import { ModalsProvider } from "@/lib/modals";
 import { RoleProvider, useRole } from "@/context/RoleContext";
 import { SuperAdminProvider, useSuperAdmin } from "@/context/SuperAdminContext";
-import { LoginScreen } from "./LoginScreen";
 import { SuperAdminShell } from "./superadmin/SuperAdminShell";
 import { SuperAdminBanner } from "./superadmin/SuperAdminBanner";
 
 export function AppLayout() {
   return (
     <AuthProvider>
-      <AuthGate />
+      <Gate />
       <Toaster position="bottom-right" richColors closeButton />
     </AuthProvider>
   );
 }
 
-function AuthGate() {
+function Gate() {
+  const path = useRouterState({ select: (s) => s.location.pathname });
   const { session, loading } = useAuth();
+  const navigate = useNavigate();
+
+  const isPublic = path === "/" || path === "/login";
+
+  useEffect(() => {
+    if (loading) return;
+    if (!session && !isPublic) {
+      navigate({ to: "/login", replace: true });
+    } else if (session && path === "/login") {
+      navigate({ to: "/dashboard", replace: true });
+    }
+  }, [session, loading, path, isPublic, navigate]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -30,7 +43,19 @@ function AuthGate() {
       </div>
     );
   }
-  if (!session) return <LoginScreen />;
+
+  // Public landing page — no auth needed, no shell
+  if (path === "/") return <Outlet />;
+
+  // Login page — render the outlet (LoginScreen) directly
+  if (path === "/login") {
+    if (session) return null; // redirecting
+    return <Outlet />;
+  }
+
+  // Protected — require session
+  if (!session) return null;
+
   return (
     <RoleProvider>
       <SuperAdminProvider>
@@ -52,12 +77,10 @@ function RoleRouter() {
     );
   }
 
-  // Super Admin without a selected clinic → super admin shell
   if (isSuperAdmin && !activeSuperAdminClinicId) {
     return <SuperAdminShell />;
   }
 
-  // Normal users (or super admin viewing a specific clinic)
   return (
     <ClinicProvider clinicId={activeSuperAdminClinicId ?? undefined}>
       <ModalsProvider>
