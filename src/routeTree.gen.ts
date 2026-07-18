@@ -16,6 +16,7 @@ import { Route as InventoryRouteImport } from './routes/inventory'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as BillingRouteImport } from './routes/billing'
 import { Route as AppointmentsRouteImport } from './routes/appointments'
+import { Route as IndexRouteImport } from './routes/index'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -52,8 +53,14 @@ const AppointmentsRoute = AppointmentsRouteImport.update({
   path: '/appointments',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
   '/billing': typeof BillingRoute
   '/dashboard': typeof DashboardRoute
@@ -63,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
   '/billing': typeof BillingRoute
   '/dashboard': typeof DashboardRoute
@@ -73,6 +81,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
   '/billing': typeof BillingRoute
   '/dashboard': typeof DashboardRoute
@@ -84,6 +93,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/appointments'
     | '/billing'
     | '/dashboard'
@@ -93,6 +103,7 @@ export interface FileRouteTypes {
     | '/settings'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/appointments'
     | '/billing'
     | '/dashboard'
@@ -102,6 +113,7 @@ export interface FileRouteTypes {
     | '/settings'
   id:
     | '__root__'
+    | '/'
     | '/appointments'
     | '/billing'
     | '/dashboard'
@@ -112,6 +124,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AppointmentsRoute: typeof AppointmentsRoute
   BillingRoute: typeof BillingRoute
   DashboardRoute: typeof DashboardRoute
@@ -172,10 +185,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppointmentsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AppointmentsRoute: AppointmentsRoute,
   BillingRoute: BillingRoute,
   DashboardRoute: DashboardRoute,
