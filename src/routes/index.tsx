@@ -1,254 +1,306 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  Calendar, Users, IndianRupee, AlertCircle, Plus, UserPlus, FileText, FlaskConical,
+  Stethoscope, ArrowRight, Clock, Users, Zap, ShieldCheck, Smartphone,
+  Calendar, FlaskConical, Receipt, Package, CheckCircle2, MessageCircle,
 } from "lucide-react";
-import {
-  BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid,
-} from "recharts";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import {
-  useClinic, todayISO, startOfMonthISO, endOfMonthISO, initials as initialsOf, colorFor, formatINR,
-} from "@/lib/auth";
-import { useModals } from "@/lib/modals";
-import { useRole } from "@/context/RoleContext";
-import type { Permission } from "@/lib/permissions";
-import type { Appointment, ApptStatus } from "@/types/database";
 
-export const Route = createFileRoute("/")({ component: Dashboard });
+export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "ClinicOS — Clinic Management for Indian Doctors & Labs" },
+      { name: "description", content: "Modern queue, patients, billing, lab reports & inventory for small clinics and diagnostic labs. Start in 5 minutes." },
+      { property: "og:title", content: "ClinicOS — Clinic Management for Indian Doctors & Labs" },
+      { property: "og:description", content: "Modern queue, patients, billing, lab reports & inventory for small clinics and diagnostic labs. Start in 5 minutes." },
+    ],
+  }),
+  component: Landing,
+});
 
-const statusStyles: Record<string, string> = {
-  Confirmed: "bg-[#E1F5EE] text-primary",
-  Pending: "bg-amber-50 text-amber-700",
-  Completed: "bg-gray-100 text-gray-600",
-  Cancelled: "bg-red-50 text-red-700",
-};
-
-function Dashboard() {
-  const { clinic } = useClinic();
-  const { open: openModal, version } = useModals();
-  const { can, staffName, role } = useRole();
-  const clinicId = clinic?.id;
-
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [todayCount, setTodayCount] = useState(0);
-  const [monthPatients, setMonthPatients] = useState(0);
-  const [monthRevenue, setMonthRevenue] = useState(0);
-  const [pendingDues, setPendingDues] = useState(0);
-  const [todayAppts, setTodayAppts] = useState<Appointment[]>([]);
-  const [revenue7d, setRevenue7d] = useState<{ day: string; revenue: number }[]>([]);
-
-  const load = async () => {
-    if (!clinicId) return;
-    setError(null);
-    try {
-      const today = todayISO();
-      const som = startOfMonthISO();
-      const eom = endOfMonthISO();
-      const sevenAgo = new Date();
-      sevenAgo.setDate(sevenAgo.getDate() - 6);
-      const sevenStr = sevenAgo.toISOString().slice(0, 10);
-
-      const [{ count: aCount }, { count: pCount }, revM, dues, todayList, rev7] = await Promise.all([
-        supabase.from("appointments").select("id", { count: "exact", head: true })
-          .eq("clinic_id", clinicId).eq("appointment_date", today),
-        supabase.from("patients").select("id", { count: "exact", head: true })
-          .eq("clinic_id", clinicId).gte("created_at", som + "T00:00:00").lte("created_at", eom + "T23:59:59"),
-        supabase.from("invoices").select("total")
-          .eq("clinic_id", clinicId).eq("status", "Paid").gte("invoice_date", som),
-        supabase.from("invoices").select("total")
-          .eq("clinic_id", clinicId).in("status", ["Pending", "Overdue"]),
-        supabase.from("appointments")
-          .select("*, patients(name, phone), staff(name)")
-          .eq("clinic_id", clinicId).eq("appointment_date", today)
-          .order("appointment_time", { ascending: true }),
-        supabase.from("invoices").select("invoice_date, total")
-          .eq("clinic_id", clinicId).eq("status", "Paid").gte("invoice_date", sevenStr),
-      ]);
-
-      setTodayCount(aCount ?? 0);
-      setMonthPatients(pCount ?? 0);
-      setMonthRevenue((revM.data ?? []).reduce((s, r: any) => s + Number(r.total || 0), 0));
-      setPendingDues((dues.data ?? []).reduce((s, r: any) => s + Number(r.total || 0), 0));
-      setTodayAppts((todayList.data as Appointment[]) ?? []);
-
-      // Build 7-day bucket
-      const buckets: Record<string, number> = {};
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date(); d.setDate(d.getDate() - i);
-        buckets[d.toISOString().slice(0, 10)] = 0;
-      }
-      (rev7.data ?? []).forEach((r: any) => {
-        const k = r.invoice_date;
-        if (k in buckets) buckets[k] += Number(r.total || 0);
-      });
-      setRevenue7d(Object.entries(buckets).map(([k, v]) => ({
-        day: new Date(k).toLocaleDateString("en-IN", { weekday: "short" }),
-        revenue: v,
-      })));
-    } catch (e: any) {
-      setError(e.message ?? "Failed to load");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [clinicId, version]);
-
-  useEffect(() => {
-    if (!clinicId) return;
-    const ch = supabase.channel("dash-appts")
-      .on("postgres_changes", { event: "*", schema: "public", table: "appointments" }, () => load())
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
-    // eslint-disable-next-line
-  }, [clinicId]);
-
-  const metrics = [
-    { label: "Today's Appointments", value: String(todayCount), Icon: Calendar, tint: "bg-[#E1F5EE] text-primary" },
-    { label: "Patients This Month", value: String(monthPatients), Icon: Users, tint: "bg-blue-50 text-blue-600" },
-    { label: "Revenue This Month", value: formatINR(monthRevenue), Icon: IndianRupee, tint: "bg-green-50 text-green-600" },
-    { label: "Pending Dues", value: formatINR(pendingDues), Icon: AlertCircle, tint: "bg-amber-50 text-amber-600" },
-  ];
-
+function Landing() {
   return (
-    <div className="space-y-6 max-w-[1400px] mx-auto">
-      <div>
-        <h2 className="text-2xl font-bold text-navy">Welcome, {staffName || "there"}</h2>
-        <p className="text-sm text-muted-foreground mt-0.5">{role ? `Signed in as ${role}.` : ""} Here's what's happening at your clinic today.</p>
-      </div>
+    <div className="min-h-screen bg-background text-navy">
+      <Header />
+      <Hero />
+      <Trust />
+      <Features />
+      <PerfectFor />
+      <Modules />
+      <CTA />
+      <Footer />
+    </div>
+  );
+}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {metrics.map((m) => (
-          <div key={m.label} className="card-surface p-5">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{m.label}</p>
-                {loading ? (
-                  <div className="h-8 mt-2 w-24 bg-muted rounded animate-pulse" />
-                ) : (
-                  <p className="text-[26px] font-bold text-navy mt-2 leading-none">{m.value}</p>
-                )}
-              </div>
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${m.tint}`}>
-                <m.Icon className="w-5 h-5" />
-              </div>
-            </div>
+function Header() {
+  return (
+    <header className="sticky top-0 z-30 bg-background/80 backdrop-blur border-b border-border">
+      <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
+            <Stethoscope className="w-5 h-5 text-white" />
           </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <section className="card-surface lg:col-span-3 p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="font-semibold text-navy">Appointments Today</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {todayAppts.filter(a => a.status === "Completed").length} of {todayCount} completed
-              </p>
-            </div>
-            {can("book_appointment") && (
-              <button
-                onClick={() => openModal("book-appointment")}
-                className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary/90 text-white text-sm font-medium px-3.5 py-2 rounded-md transition-colors"
-              >
-                <Plus className="w-4 h-4" /> Book New
-              </button>
-            )}
-          </div>
-          {error && (
-            <div className="text-sm bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-md mb-3 flex justify-between items-center">
-              <span>{error}</span>
-              <button onClick={load} className="text-xs font-semibold underline">Retry</button>
-            </div>
-          )}
-          {loading ? (
-            <div className="space-y-3">
-              {[...Array(4)].map((_, i) => <div key={i} className="h-12 bg-muted rounded animate-pulse" />)}
-            </div>
-          ) : todayAppts.length === 0 ? (
-            <div className="py-10 text-center text-sm text-muted-foreground">No appointments today.</div>
-          ) : (
-            <ul className="divide-y divide-border">
-              {todayAppts.map((a) => {
-                const pname = a.patients?.name ?? "—";
-                const dname = a.staff?.name ?? "—";
-                const status = (a.status as ApptStatus) ?? "Pending";
-                return (
-                  <li key={a.id} className="py-3 flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0"
-                      style={{ backgroundColor: colorFor(pname) }}
-                    >
-                      {initialsOf(pname)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-navy text-sm truncate">{pname}</p>
-                        <span className="text-xs text-muted-foreground">· {a.type ?? "Visit"}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-0.5">{dname}</p>
-                    </div>
-                    <div className="text-sm font-medium text-navy tabular-nums w-20 text-right">
-                      {a.appointment_time?.slice(0, 5)}
-                    </div>
-                    <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${statusStyles[status]} w-[88px] text-center`}>
-                      {status}
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
-
-        <div className="lg:col-span-2 space-y-6">
-          <section className="card-surface p-5">
-            <h3 className="font-semibold text-navy">Revenue This Week</h3>
-            <p className="text-xs text-muted-foreground mt-0.5 mb-4">Daily collections (₹)</p>
-            <div className="h-[200px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={revenue7d} margin={{ top: 6, right: 6, left: -16, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#E0EFF2" vertical={false} />
-                  <XAxis dataKey="day" stroke="#6B7C85" fontSize={11} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#6B7C85" fontSize={11} tickLine={false} axisLine={false}
-                    tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} />
-                  <Tooltip
-                    cursor={{ fill: "#E1F5EE" }}
-                    contentStyle={{ borderRadius: 8, border: "1px solid #E0EFF2", fontSize: 12 }}
-                    formatter={(v: number) => [`₹${v.toLocaleString("en-IN")}`, "Revenue"]}
-                  />
-                  <Bar dataKey="revenue" fill="#028090" radius={[6, 6, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </section>
-
-          <section className="card-surface p-5">
-            <h3 className="font-semibold text-navy">Quick Actions</h3>
-            <div className="grid grid-cols-2 gap-3 mt-4">
-              {([
-                { label: "New Appointment", Icon: Calendar, modal: "book-appointment" as const, perm: "book_appointment" as Permission },
-                { label: "Add Patient", Icon: UserPlus, modal: "new-patient" as const, perm: "register_patient" as Permission },
-                { label: "Create Invoice", Icon: FileText, modal: "create-invoice" as const, perm: "create_invoice" as Permission },
-                { label: "Upload Lab Report", Icon: FlaskConical, modal: "upload-lab-report" as const, perm: "upload_lab_report" as Permission },
-              ]).filter((q) => can(q.perm)).map((q) => (
-                <button
-                  key={q.label}
-                  onClick={() => openModal(q.modal)}
-                  className="border border-border rounded-lg p-3 flex flex-col items-start gap-2 hover:border-primary hover:bg-[#E1F5EE]/40 cursor-pointer active:scale-[0.97] transition-all duration-150 text-left"
-                >
-                  <div className="w-9 h-9 rounded-md bg-[#E1F5EE] flex items-center justify-center">
-                    <q.Icon className="w-4.5 h-4.5 text-primary" />
-                  </div>
-                  <span className="text-xs font-medium text-navy leading-tight">{q.label}</span>
-                </button>
-              ))}
-            </div>
-          </section>
+          <div className="font-bold text-lg">ClinicOS</div>
+        </div>
+        <nav className="hidden md:flex items-center gap-7 text-sm text-muted-foreground">
+          <a href="#features" className="hover:text-navy">Features</a>
+          <a href="#modules" className="hover:text-navy">Modules</a>
+          <a href="#for" className="hover:text-navy">Who it's for</a>
+        </nav>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/login"
+            className="text-sm font-medium px-3.5 py-2 rounded-md text-navy hover:bg-muted transition-colors"
+          >
+            Sign in
+          </Link>
+          <Link
+            to="/login"
+            className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold px-3.5 py-2 rounded-md bg-primary text-white hover:bg-primary/90 transition-colors"
+          >
+            Get started <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </div>
+    </header>
+  );
+}
+
+function Hero() {
+  return (
+    <section className="max-w-6xl mx-auto px-5 pt-16 pb-20 md:pt-24 md:pb-28 grid lg:grid-cols-2 gap-12 items-center">
+      <div>
+        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-[#E1F5EE] px-3 py-1 rounded-full">
+          <span className="w-1.5 h-1.5 rounded-full bg-primary" /> Made in India, for Indian clinics
+        </span>
+        <h1 className="mt-5 text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.05]">
+          <span className="text-primary">ClinicOS</span><br />
+          Your Clinic,<br />Beautifully Organised.
+        </h1>
+        <p className="mt-5 text-base md:text-lg text-muted-foreground max-w-xl">
+          Appointments, patients, billing, lab reports and inventory — one calm dashboard for
+          independent doctors and diagnostic labs. Start in 5 minutes.
+        </p>
+        <div className="mt-7 flex flex-wrap gap-3">
+          <Link
+            to="/login"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors"
+          >
+            Sign in to dashboard <ArrowRight className="w-4 h-4" />
+          </Link>
+          <a
+            href="#features"
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-md border border-border bg-white text-sm font-semibold hover:border-primary hover:text-primary transition-colors"
+          >
+            <MessageCircle className="w-4 h-4" /> See what's inside
+          </a>
+        </div>
+        <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-accent" />No downloads</span>
+          <span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-accent" />No installations</span>
+          <span className="inline-flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-accent" />Runs in your browser</span>
+        </div>
+      </div>
+      <HeroPreview />
+    </section>
+  );
+}
+
+function HeroPreview() {
+  const queue = [
+    { name: "Rajesh Kumar", time: "10:15", tag: "Next", tone: "bg-[#E1F5EE] text-primary" },
+    { name: "Priya Sharma", time: "10:30", tag: "Urgent", tone: "bg-red-50 text-red-700" },
+    { name: "Amit Patel", time: "10:45", tag: "Waiting", tone: "bg-amber-50 text-amber-700" },
+    { name: "Sneha Reddy", time: "11:00", tag: "Waiting", tone: "bg-amber-50 text-amber-700" },
+  ];
+  return (
+    <div className="relative">
+      <div className="absolute -inset-8 bg-gradient-to-br from-[#E1F5EE] via-white to-blue-50 rounded-3xl -z-10" />
+      <div className="card-surface p-5 shadow-xl">
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-xs text-muted-foreground uppercase tracking-wide">Today's Queue</div>
+            <div className="font-bold text-lg">4 patients waiting</div>
+          </div>
+          <div className="text-xs font-medium text-primary bg-[#E1F5EE] px-2.5 py-1 rounded-full">Live</div>
+        </div>
+        <ul className="mt-4 space-y-2">
+          {queue.map((q) => (
+            <li key={q.name} className="flex items-center gap-3 border border-border rounded-lg p-3">
+              <div className="w-9 h-9 rounded-full bg-primary/10 text-primary text-xs font-semibold flex items-center justify-center">
+                {q.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium truncate">{q.name}</div>
+                <div className="text-xs text-muted-foreground">{q.time} AM</div>
+              </div>
+              <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full ${q.tone}`}>{q.tag}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
+  );
+}
+
+function Trust() {
+  return (
+    <section className="bg-navy text-white py-14 md:py-16">
+      <div className="max-w-6xl mx-auto px-5 text-center">
+        <h2 className="text-2xl md:text-3xl font-bold">Built for clinics that see 10–50 patients a day</h2>
+        <p className="mt-3 text-white/70 max-w-2xl mx-auto text-sm md:text-base">
+          No complicated dashboards. No unnecessary forms. Just the tools your clinic actually needs
+          to run faster and smoother.
+        </p>
+        <div className="mt-10 grid md:grid-cols-3 gap-5">
+          {[
+            { Icon: Clock, title: "5-Minute Setup", body: "Start using immediately. No complex configuration or long onboarding." },
+            { Icon: Zap, title: "Zero Training", body: "Your reception staff can learn the system in under 5 minutes." },
+            { Icon: Smartphone, title: "Works Everywhere", body: "Any device — phone, tablet or computer. No special hardware." },
+          ].map((f) => (
+            <div key={f.title} className="bg-white/5 border border-white/10 rounded-xl p-6 text-left">
+              <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+                <f.Icon className="w-5 h-5" />
+              </div>
+              <div className="mt-4 font-semibold">{f.title}</div>
+              <div className="mt-1.5 text-sm text-white/70">{f.body}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Features() {
+  const items = [
+    { Icon: ShieldCheck, title: "ABDM-ready", body: "Enterprise plans link with ABHA and Health IDs — future-proof from day one." },
+    { Icon: Users, title: "Role-based access", body: "Doctors, receptionists, lab techs and pharmacists each see only what they need." },
+    { Icon: Clock, title: "Real-time updates", body: "Bookings, payments and lab uploads sync instantly across your team." },
+  ];
+  return (
+    <section id="features" className="py-20">
+      <div className="max-w-6xl mx-auto px-5">
+        <div className="max-w-2xl">
+          <div className="text-xs font-semibold text-primary uppercase tracking-wide">Why ClinicOS</div>
+          <h2 className="mt-2 text-3xl md:text-4xl font-bold">Everything to run a clinic. Nothing you don't need.</h2>
+        </div>
+        <div className="mt-10 grid md:grid-cols-3 gap-5">
+          {items.map((f) => (
+            <div key={f.title} className="card-surface p-6">
+              <div className="w-10 h-10 rounded-lg bg-[#E1F5EE] text-primary flex items-center justify-center">
+                <f.Icon className="w-5 h-5" />
+              </div>
+              <div className="mt-4 font-semibold">{f.title}</div>
+              <p className="mt-1.5 text-sm text-muted-foreground">{f.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function PerfectFor() {
+  const list = [
+    "General Physicians",
+    "ENT & Pediatric Clinics",
+    "Small Polyclinics (1–3 doctors)",
+    "Diagnostic Labs",
+    "Clinics without a receptionist",
+    "Clinics still on paper registers",
+  ];
+  return (
+    <section id="for" className="py-20 bg-[#F4FAFB]">
+      <div className="max-w-6xl mx-auto px-5">
+        <div className="max-w-2xl">
+          <div className="text-xs font-semibold text-primary uppercase tracking-wide">Perfect for</div>
+          <h2 className="mt-2 text-3xl md:text-4xl font-bold">Is ClinicOS right for your practice?</h2>
+        </div>
+        <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {list.map((t) => (
+            <div key={t} className="card-surface p-4 flex items-center gap-3">
+              <CheckCircle2 className="w-5 h-5 text-accent shrink-0" />
+              <span className="text-sm font-medium">{t}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Modules() {
+  const mods = [
+    { Icon: Calendar, title: "Appointments", body: "Week grid, quick booking, colour-coded status." },
+    { Icon: Users, title: "Patients", body: "Full history, allergies, visits and prescriptions." },
+    { Icon: Receipt, title: "Billing", body: "GST invoices, payments and outstanding dues." },
+    { Icon: FlaskConical, title: "Lab Reports", body: "Upload PDFs, mark delivered, signed URLs." },
+    { Icon: Package, title: "Inventory", body: "Stock levels, expiry tracking, low-stock alerts." },
+    { Icon: ShieldCheck, title: "Roles & Settings", body: "Clinic profile, staff, permissions and ABDM." },
+  ];
+  return (
+    <section id="modules" className="py-20">
+      <div className="max-w-6xl mx-auto px-5">
+        <div className="max-w-2xl">
+          <div className="text-xs font-semibold text-primary uppercase tracking-wide">Modules</div>
+          <h2 className="mt-2 text-3xl md:text-4xl font-bold">Six modules. One shared clinic.</h2>
+        </div>
+        <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {mods.map((m) => (
+            <div key={m.title} className="card-surface p-6 hover:border-primary transition-colors">
+              <div className="w-10 h-10 rounded-lg bg-[#E1F5EE] text-primary flex items-center justify-center">
+                <m.Icon className="w-5 h-5" />
+              </div>
+              <div className="mt-4 font-semibold">{m.title}</div>
+              <p className="mt-1.5 text-sm text-muted-foreground">{m.body}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CTA() {
+  return (
+    <section className="py-20">
+      <div className="max-w-4xl mx-auto px-5">
+        <div className="rounded-2xl bg-gradient-to-br from-primary to-[#026470] text-white p-10 md:p-14 text-center shadow-xl">
+          <h2 className="text-3xl md:text-4xl font-bold">Ready when your next patient arrives.</h2>
+          <p className="mt-3 text-white/85 max-w-xl mx-auto">
+            Sign in to your ClinicOS dashboard and start managing appointments, patients and billing in minutes.
+          </p>
+          <div className="mt-7">
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-md bg-white text-primary text-sm font-semibold hover:bg-white/90 transition-colors"
+            >
+              Sign in to your clinic <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="border-t border-border py-10">
+      <div className="max-w-6xl mx-auto px-5 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
+            <Stethoscope className="w-4 h-4 text-white" />
+          </div>
+          <span className="font-semibold text-navy">ClinicOS</span>
+          <span>· © {new Date().getFullYear()}</span>
+        </div>
+        <div className="flex items-center gap-5">
+          <a href="#features" className="hover:text-navy">Features</a>
+          <a href="#modules" className="hover:text-navy">Modules</a>
+          <Link to="/login" className="hover:text-navy">Sign in</Link>
+        </div>
+      </div>
+    </footer>
   );
 }

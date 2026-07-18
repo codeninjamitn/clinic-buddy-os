@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as PatientsRouteImport } from './routes/patients'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as LabReportsRouteImport } from './routes/lab-reports'
 import { Route as InventoryRouteImport } from './routes/inventory'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as BillingRouteImport } from './routes/billing'
 import { Route as AppointmentsRouteImport } from './routes/appointments'
 import { Route as IndexRouteImport } from './routes/index'
@@ -27,6 +29,11 @@ const PatientsRoute = PatientsRouteImport.update({
   path: '/patients',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LabReportsRoute = LabReportsRouteImport.update({
   id: '/lab-reports',
   path: '/lab-reports',
@@ -35,6 +42,11 @@ const LabReportsRoute = LabReportsRouteImport.update({
 const InventoryRoute = InventoryRouteImport.update({
   id: '/inventory',
   path: '/inventory',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BillingRoute = BillingRouteImport.update({
@@ -57,8 +69,10 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
   '/billing': typeof BillingRoute
+  '/dashboard': typeof DashboardRoute
   '/inventory': typeof InventoryRoute
   '/lab-reports': typeof LabReportsRoute
+  '/login': typeof LoginRoute
   '/patients': typeof PatientsRoute
   '/settings': typeof SettingsRoute
 }
@@ -66,8 +80,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
   '/billing': typeof BillingRoute
+  '/dashboard': typeof DashboardRoute
   '/inventory': typeof InventoryRoute
   '/lab-reports': typeof LabReportsRoute
+  '/login': typeof LoginRoute
   '/patients': typeof PatientsRoute
   '/settings': typeof SettingsRoute
 }
@@ -76,8 +92,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
   '/billing': typeof BillingRoute
+  '/dashboard': typeof DashboardRoute
   '/inventory': typeof InventoryRoute
   '/lab-reports': typeof LabReportsRoute
+  '/login': typeof LoginRoute
   '/patients': typeof PatientsRoute
   '/settings': typeof SettingsRoute
 }
@@ -87,8 +105,10 @@ export interface FileRouteTypes {
     | '/'
     | '/appointments'
     | '/billing'
+    | '/dashboard'
     | '/inventory'
     | '/lab-reports'
+    | '/login'
     | '/patients'
     | '/settings'
   fileRoutesByTo: FileRoutesByTo
@@ -96,8 +116,10 @@ export interface FileRouteTypes {
     | '/'
     | '/appointments'
     | '/billing'
+    | '/dashboard'
     | '/inventory'
     | '/lab-reports'
+    | '/login'
     | '/patients'
     | '/settings'
   id:
@@ -105,8 +127,10 @@ export interface FileRouteTypes {
     | '/'
     | '/appointments'
     | '/billing'
+    | '/dashboard'
     | '/inventory'
     | '/lab-reports'
+    | '/login'
     | '/patients'
     | '/settings'
   fileRoutesById: FileRoutesById
@@ -115,8 +139,10 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppointmentsRoute: typeof AppointmentsRoute
   BillingRoute: typeof BillingRoute
+  DashboardRoute: typeof DashboardRoute
   InventoryRoute: typeof InventoryRoute
   LabReportsRoute: typeof LabReportsRoute
+  LoginRoute: typeof LoginRoute
   PatientsRoute: typeof PatientsRoute
   SettingsRoute: typeof SettingsRoute
 }
@@ -137,6 +163,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PatientsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lab-reports': {
       id: '/lab-reports'
       path: '/lab-reports'
@@ -149,6 +182,13 @@ declare module '@tanstack/react-router' {
       path: '/inventory'
       fullPath: '/inventory'
       preLoaderRoute: typeof InventoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/billing': {
@@ -179,8 +219,10 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppointmentsRoute: AppointmentsRoute,
   BillingRoute: BillingRoute,
+  DashboardRoute: DashboardRoute,
   InventoryRoute: InventoryRoute,
   LabReportsRoute: LabReportsRoute,
+  LoginRoute: LoginRoute,
   PatientsRoute: PatientsRoute,
   SettingsRoute: SettingsRoute,
 }
