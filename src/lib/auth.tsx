@@ -76,11 +76,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export const useAuth = () => useContext(AuthContext);
 
 // ---------- Clinic ----------
-interface ClinicCtx { clinic: Clinic | null; loading: boolean; refresh: () => Promise<void> }
-const ClinicContext = createContext<ClinicCtx>({ clinic: null, loading: true, refresh: async () => {} });
+import type { Clinic as _C } from "@/types/database";
+import type { ClinicSpeciality, Speciality } from "@/types/database";
+
+interface ClinicCtx {
+  clinic: Clinic | null;
+  loading: boolean;
+  refresh: () => Promise<void>;
+  specialities: ClinicSpeciality[];
+  primarySpeciality: Speciality | null;
+  hasSpeciality: (slug: string) => boolean;
+}
+const ClinicContext = createContext<ClinicCtx>({
+  clinic: null, loading: true, refresh: async () => {},
+  specialities: [], primarySpeciality: null, hasSpeciality: () => false,
+});
 
 export function ClinicProvider({ children, clinicId }: { children: ReactNode; clinicId?: string | null }) {
   const [clinic, setClinic] = useState<Clinic | null>(null);
+  const [specialities, setSpecialities] = useState<ClinicSpeciality[]>([]);
   const [loading, setLoading] = useState(true);
 
   const refresh = async () => {
@@ -89,13 +103,35 @@ export function ClinicProvider({ children, clinicId }: { children: ReactNode; cl
     const { data } = clinicId
       ? await q.eq("id", clinicId).maybeSingle()
       : await q.limit(1).maybeSingle();
-    setClinic((data as Clinic) ?? null);
+    const c = (data as Clinic) ?? null;
+    setClinic(c);
+    if (c) {
+      const { data: sp } = await supabase
+        .from("clinic_specialities")
+        .select("*, specialities(*)")
+        .eq("clinic_id", c.id)
+        .order("is_primary", { ascending: false });
+      setSpecialities((sp as unknown as ClinicSpeciality[]) ?? []);
+    } else {
+      setSpecialities([]);
+    }
     setLoading(false);
   };
 
   useEffect(() => { refresh(); /* eslint-disable-next-line */ }, [clinicId]);
 
-  return <ClinicContext.Provider value={{ clinic, loading, refresh }}>{children}</ClinicContext.Provider>;
+  const primary = specialities.find((s) => s.is_primary)?.specialities ?? specialities[0]?.specialities ?? null;
+  const hasSpeciality = (slug: string) => specialities.some((s) => s.specialities?.slug === slug);
+
+  return (
+    <ClinicContext.Provider value={{
+      clinic, loading, refresh, specialities,
+      primarySpeciality: primary, hasSpeciality,
+    }}>{children}</ClinicContext.Provider>
+  );
 }
 
 export const useClinic = () => useContext(ClinicContext);
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type _KeepClinicImport = _C;
+
