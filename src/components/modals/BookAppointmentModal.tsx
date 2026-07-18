@@ -17,8 +17,13 @@ interface Props {
 }
 
 export function BookAppointmentModal({ isOpen, onClose, onSuccess, prefillPatientId, prefillPatientName }: Props) {
-  const { clinic } = useClinic();
+  const { clinic, specialities } = useClinic();
   const clinicId = clinic?.id;
+  // Union of appointment types from all clinic specialities (dedup, preserves order).
+  const typesForClinic = Array.from(new Set(
+    (specialities.length ? specialities : [{ specialities: { slug: "general" } } as never])
+      .flatMap((cs) => APPOINTMENT_TYPES[(cs.specialities?.slug as SpecialitySlug) ?? "general"] ?? [])
+  ));
 
   const [patients, setPatients] = useState<Patient[]>([]);
   const [doctors, setDoctors] = useState<Staff[]>([]);
