@@ -15,7 +15,7 @@ import { useRole } from "@/context/RoleContext";
 import type { Permission } from "@/lib/permissions";
 import type { Appointment, ApptStatus } from "@/types/database";
 
-export const Route = createFileRoute("/")({ component: Dashboard });
+export const Route = createFileRoute("/dashboard")({ component: Dashboard });
 
 const statusStyles: Record<string, string> = {
   Confirmed: "bg-[#E1F5EE] text-primary",

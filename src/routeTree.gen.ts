@@ -13,9 +13,9 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as PatientsRouteImport } from './routes/patients'
 import { Route as LabReportsRouteImport } from './routes/lab-reports'
 import { Route as InventoryRouteImport } from './routes/inventory'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as BillingRouteImport } from './routes/billing'
 import { Route as AppointmentsRouteImport } from './routes/appointments'
-import { Route as IndexRouteImport } from './routes/index'
 
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
@@ -37,6 +37,11 @@ const InventoryRoute = InventoryRouteImport.update({
   path: '/inventory',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BillingRoute = BillingRouteImport.update({
   id: '/billing',
   path: '/billing',
@@ -47,25 +52,20 @@ const AppointmentsRoute = AppointmentsRouteImport.update({
   path: '/appointments',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
   '/billing': typeof BillingRoute
+  '/dashboard': typeof DashboardRoute
   '/inventory': typeof InventoryRoute
   '/lab-reports': typeof LabReportsRoute
   '/patients': typeof PatientsRoute
   '/settings': typeof SettingsRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
   '/billing': typeof BillingRoute
+  '/dashboard': typeof DashboardRoute
   '/inventory': typeof InventoryRoute
   '/lab-reports': typeof LabReportsRoute
   '/patients': typeof PatientsRoute
@@ -73,9 +73,9 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/appointments': typeof AppointmentsRoute
   '/billing': typeof BillingRoute
+  '/dashboard': typeof DashboardRoute
   '/inventory': typeof InventoryRoute
   '/lab-reports': typeof LabReportsRoute
   '/patients': typeof PatientsRoute
@@ -84,27 +84,27 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/appointments'
     | '/billing'
+    | '/dashboard'
     | '/inventory'
     | '/lab-reports'
     | '/patients'
     | '/settings'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/appointments'
     | '/billing'
+    | '/dashboard'
     | '/inventory'
     | '/lab-reports'
     | '/patients'
     | '/settings'
   id:
     | '__root__'
-    | '/'
     | '/appointments'
     | '/billing'
+    | '/dashboard'
     | '/inventory'
     | '/lab-reports'
     | '/patients'
@@ -112,9 +112,9 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   AppointmentsRoute: typeof AppointmentsRoute
   BillingRoute: typeof BillingRoute
+  DashboardRoute: typeof DashboardRoute
   InventoryRoute: typeof InventoryRoute
   LabReportsRoute: typeof LabReportsRoute
   PatientsRoute: typeof PatientsRoute
@@ -151,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InventoryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/billing': {
       id: '/billing'
       path: '/billing'
@@ -165,20 +172,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppointmentsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   AppointmentsRoute: AppointmentsRoute,
   BillingRoute: BillingRoute,
+  DashboardRoute: DashboardRoute,
   InventoryRoute: InventoryRoute,
   LabReportsRoute: LabReportsRoute,
   PatientsRoute: PatientsRoute,
