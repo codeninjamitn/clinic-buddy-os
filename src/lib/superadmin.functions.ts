@@ -169,6 +169,24 @@ export const updateClinicProfile = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const setClinicSpecialities = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({
+    clinicId: z.string().uuid(),
+    specialityIds: z.array(z.string().uuid()).min(1).max(20),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context.userId);
+    const { error: delErr } = await supabaseAdmin.from("clinic_specialities").delete().eq("clinic_id", data.clinicId);
+    if (delErr) throw new Error(delErr.message);
+    const rows = data.specialityIds.map((id, idx) => ({
+      clinic_id: data.clinicId, speciality_id: id, is_primary: idx === 0,
+    }));
+    const { error: insErr } = await supabaseAdmin.from("clinic_specialities").insert(rows);
+    if (insErr) throw new Error(insErr.message);
+    return { ok: true };
+  });
+
 export const logClinicEntered = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
