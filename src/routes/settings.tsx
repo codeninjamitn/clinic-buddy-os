@@ -15,13 +15,15 @@ export const Route = createFileRoute("/settings")({ component: SettingsPage });
 
 function SettingsPage() {
   const { clinic, refresh } = useClinic();
-  const { can } = useRole();
+  const { can, staffId } = useRole();
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [staff, setStaff] = useState<Staff[]>([]);
   const [addOpen, setAddOpen] = useState(false);
   const [editing, setEditing] = useState<Staff | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
+  const removeStaffFn = useServerFn(removeStaffMember);
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
