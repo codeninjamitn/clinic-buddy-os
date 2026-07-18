@@ -74,12 +74,15 @@ export function AddClinicWizard({ onClose }: { onClose: (created: boolean) => vo
       if (!clinic.phone) return "Clinic phone is required";
     }
     if (step === 1) {
+      if (specialityIds.length === 0) return "Select at least one speciality";
+    }
+    if (step === 2) {
       if (!admin.name) return "Admin name is required";
       if (!admin.email || !/^[^@]+@[^@]+\.[^@]+$/.test(admin.email)) return "Valid admin email is required";
       if (!admin.phone) return "Admin phone is required";
       if (admin.password.length < 8) return "Password must be at least 8 characters";
     }
-    if (step === 2) {
+    if (step === 3) {
       for (const m of team) {
         if (!m.name) return "All team members need a name";
         if (!m.phone) return `${m.name}: phone required`;
@@ -87,12 +90,13 @@ export function AddClinicWizard({ onClose }: { onClose: (created: boolean) => vo
         if (m.email && m.tempPassword.length < 8) return `${m.name}: password ≥ 8 chars`;
       }
     }
-    if (step === 3) {
+    if (step === 4) {
       for (const r of inventory) {
         if (!r.medicine_name) return "Medicine name required for all inventory rows";
         if (!r.unit) return `${r.medicine_name}: unit required`;
       }
     }
+
     return null;
   };
 
