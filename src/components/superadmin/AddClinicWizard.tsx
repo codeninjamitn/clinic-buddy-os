@@ -316,16 +316,100 @@ function InventoryStep({ value, onChange }: { value: InventoryRow[]; onChange: (
   );
 }
 
-function SpecialityStep({ all, selected, onChange }: { all: Speciality[]; selected: string[]; onChange: (ids: string[]) => void }) {
+function SpecialityStep({ all, selected, onChange, onCreated }: { all: Speciality[]; selected: string[]; onChange: (ids: string[]) => void; onCreated: (s: Speciality) => void }) {
+  const [creating, setCreating] = useState(false);
   if (all.length === 0) {
     return <p className="text-[13px]" style={{ color: "#7FBBC5" }}>Loading specialities…</p>;
   }
   return (
     <div className="space-y-3">
-      <p className="text-[12px]" style={{ color: "#7FBBC5" }}>
-        Select the disciplines this clinic offers. The first one you pick is the primary speciality.
-      </p>
+      <div className="flex items-start justify-between gap-3">
+        <p className="text-[12px]" style={{ color: "#7FBBC5" }}>
+          Select the disciplines this clinic offers. The first one you pick is the primary speciality.
+        </p>
+        <button
+          type="button"
+          onClick={() => setCreating(true)}
+          className="shrink-0 text-[12px] font-semibold px-2.5 py-1.5 rounded-md border"
+          style={{ borderColor: "#1F4A5C", color: "#E1F5EE" }}
+        >
+          + New speciality
+        </button>
+      </div>
       <SpecialityPicker dark all={all} selected={selected} onChange={onChange} />
+      {creating && (
+        <NewSpecialityModal
+          onClose={() => setCreating(false)}
+          onCreated={(s) => { onCreated(s); setCreating(false); }}
+        />
+      )}
+    </div>
+  );
+}
+
+const ICON_CHOICES = ["🩺", "🦷", "🏃", "👶", "🤰", "👁️", "❤️", "🧴", "🧠", "🦴", "🩻", "🧬"];
+const COLOR_CHOICES = ["#0F3E4C", "#14B8A6", "#3B82F6", "#8B5CF6", "#EC4899", "#F59E0B", "#EF4444", "#10B981"];
+
+function NewSpecialityModal({ onClose, onCreated }: { onClose: () => void; onCreated: (s: Speciality) => void }) {
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [icon, setIcon] = useState(ICON_CHOICES[0]);
+  const [color, setColor] = useState(COLOR_CHOICES[0]);
+  const [saving, setSaving] = useState(false);
+
+  const submit = async () => {
+    const trimmed = name.trim();
+    if (!trimmed) return toast.error("Speciality name is required");
+    const slug = trimmed.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    setSaving(true);
+    const { data, error } = await supabase
+      .from("specialities")
+      .insert({ name: trimmed, slug, icon, color, description: description.trim() || null, sort_order: 100 })
+      .select("*")
+      .single();
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success(`${trimmed} added`);
+    onCreated(data as Speciality);
+  };
+
+  return (
+    <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="rounded-xl w-full max-w-md p-6" style={{ background: "#0B2A34", border: "1px solid #1F4A5C" }} onClick={(e) => e.stopPropagation()}>
+        <h4 className="text-base font-semibold mb-3" style={{ color: "#E1F5EE" }}>Create new speciality</h4>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-[11px] font-medium mb-1" style={{ color: "#7FBBC5" }}>Name</label>
+            <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. ENT" className="w-full px-3 py-2 text-sm rounded-md" style={{ background: "#08202A", border: "1px solid #1F4A5C", color: "#E1F5EE" }} />
+          </div>
+          <div>
+            <label className="block text-[11px] font-medium mb-1" style={{ color: "#7FBBC5" }}>Description (optional)</label>
+            <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Short description" className="w-full px-3 py-2 text-sm rounded-md" style={{ background: "#08202A", border: "1px solid #1F4A5C", color: "#E1F5EE" }} />
+          </div>
+          <div>
+            <label className="block text-[11px] font-medium mb-1" style={{ color: "#7FBBC5" }}>Icon</label>
+            <div className="flex flex-wrap gap-1.5">
+              {ICON_CHOICES.map((i) => (
+                <button key={i} type="button" onClick={() => setIcon(i)} className="w-9 h-9 rounded-md text-lg" style={{ background: icon === i ? "#14B8A6" : "#08202A", border: "1px solid #1F4A5C" }}>{i}</button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-[11px] font-medium mb-1" style={{ color: "#7FBBC5" }}>Color</label>
+            <div className="flex flex-wrap gap-1.5">
+              {COLOR_CHOICES.map((c) => (
+                <button key={c} type="button" onClick={() => setColor(c)} className="w-8 h-8 rounded-full" style={{ background: c, outline: color === c ? "2px solid #E1F5EE" : "none", outlineOffset: 2 }} />
+              ))}
+            </div>
+          </div>
+        </div>
+        <div className="flex gap-2 pt-5">
+          <button onClick={onClose} className="flex-1 py-2 rounded-md text-sm font-semibold" style={{ border: "1px solid #1F4A5C", color: "#E1F5EE" }}>Cancel</button>
+          <button onClick={submit} disabled={saving} className="flex-1 py-2 rounded-md text-sm font-semibold text-white disabled:opacity-60" style={{ background: "#14B8A6" }}>
+            {saving ? "Creating…" : "Create speciality"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
