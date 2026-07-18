@@ -30,7 +30,7 @@ export function BookAppointmentModal({ isOpen, onClose, onSuccess, prefillPatien
   const [doctorId, setDoctorId] = useState("");
   const [date, setDate] = useState(isoDate(new Date()));
   const [slot, setSlot] = useState("10:00");
-  const [type, setType] = useState<ApptType>("General Checkup");
+  const [type, setType] = useState<string>("General Checkup");
   const [notes, setNotes] = useState("");
   const [reminder, setReminder] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -187,8 +187,8 @@ export function BookAppointmentModal({ isOpen, onClose, onSuccess, prefillPatien
 
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1.5">Type</label>
-            <select value={type} onChange={(e) => setType(e.target.value as ApptType)} className="w-full px-3 py-2 text-sm rounded-md border border-border bg-white">
-              {types.map(t => <option key={t}>{t}</option>)}
+            <select value={type} onChange={(e) => setType(e.target.value)} className="w-full px-3 py-2 text-sm rounded-md border border-border bg-white">
+              {typesForClinic.map((t) => <option key={t}>{t}</option>)}
             </select>
           </div>
 
