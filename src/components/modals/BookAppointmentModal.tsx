@@ -3,10 +3,10 @@ import { X, Search, Calendar as CalIcon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useClinic, isoDate } from "@/lib/auth";
-import type { Patient, Staff, ApptType } from "@/types/database";
+import type { Patient, Staff } from "@/types/database";
+import { APPOINTMENT_TYPES, type SpecialitySlug } from "@/lib/specialities";
 
 const slots = ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30"];
-const types: ApptType[] = ["General Checkup", "Follow-up", "Procedure", "Lab Consultation", "Emergency"];
 
 interface Props {
   isOpen: boolean;
