@@ -3,10 +3,10 @@ import { X, Search, Calendar as CalIcon, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useClinic, isoDate } from "@/lib/auth";
-import type { Patient, Staff, ApptType } from "@/types/database";
+import type { Patient, Staff } from "@/types/database";
+import { APPOINTMENT_TYPES, type SpecialitySlug } from "@/lib/specialities";
 
 const slots = ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "14:00", "14:30", "15:00", "15:30", "16:00", "16:30"];
-const types: ApptType[] = ["General Checkup", "Follow-up", "Procedure", "Lab Consultation", "Emergency"];
 
 interface Props {
   isOpen: boolean;
@@ -17,8 +17,13 @@ interface Props {
 }
 
 export function BookAppointmentModal({ isOpen, onClose, onSuccess, prefillPatientId, prefillPatientName }: Props) {
-  const { clinic } = useClinic();
+  const { clinic, specialities } = useClinic();
   const clinicId = clinic?.id;
+  // Union of appointment types from all clinic specialities (dedup, preserves order).
+  const typesForClinic = Array.from(new Set(
+    (specialities.length ? specialities : [{ specialities: { slug: "general" } } as never])
+      .flatMap((cs) => APPOINTMENT_TYPES[(cs.specialities?.slug as SpecialitySlug) ?? "general"] ?? [])
+  ));
 
   const [patients, setPatients] = useState<Patient[]>([]);
   const [doctors, setDoctors] = useState<Staff[]>([]);
@@ -30,7 +35,7 @@ export function BookAppointmentModal({ isOpen, onClose, onSuccess, prefillPatien
   const [doctorId, setDoctorId] = useState("");
   const [date, setDate] = useState(isoDate(new Date()));
   const [slot, setSlot] = useState("10:00");
-  const [type, setType] = useState<ApptType>("General Checkup");
+  const [type, setType] = useState<string>("General Checkup");
   const [notes, setNotes] = useState("");
   const [reminder, setReminder] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -187,8 +192,8 @@ export function BookAppointmentModal({ isOpen, onClose, onSuccess, prefillPatien
 
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1.5">Type</label>
-            <select value={type} onChange={(e) => setType(e.target.value as ApptType)} className="w-full px-3 py-2 text-sm rounded-md border border-border bg-white">
-              {types.map(t => <option key={t}>{t}</option>)}
+            <select value={type} onChange={(e) => setType(e.target.value)} className="w-full px-3 py-2 text-sm rounded-md border border-border bg-white">
+              {typesForClinic.map((t) => <option key={t}>{t}</option>)}
             </select>
           </div>
 
