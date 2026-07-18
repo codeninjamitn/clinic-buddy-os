@@ -224,8 +224,10 @@ function SettingsPage() {
             <tr>
               <th className="text-left px-6 py-3">Name</th>
               <th className="text-left px-6 py-3">Role</th>
+              <th className="text-left px-6 py-3">Email</th>
               <th className="text-left px-6 py-3">Phone</th>
               <th className="text-right px-6 py-3">Status</th>
+              <th className="text-right px-6 py-3">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -233,6 +235,7 @@ function SettingsPage() {
               <tr key={s.id} className="border-t border-border hover:bg-[#E1F5EE]/40 transition-colors">
                 <td className="px-6 py-3 font-medium text-navy">{s.name}</td>
                 <td className="px-6 py-3 text-muted-foreground">{s.role}</td>
+                <td className="px-6 py-3 text-muted-foreground">{s.email ?? "—"}</td>
                 <td className="px-6 py-3 text-muted-foreground">{s.phone ?? "—"}</td>
                 <td className="px-6 py-3">
                   <div className="flex justify-end">
@@ -244,6 +247,14 @@ function SettingsPage() {
                     </button>
                   </div>
                 </td>
+                <td className="px-6 py-3 text-right">
+                  <button
+                    onClick={() => setEditing(s)}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-semibold text-primary hover:bg-primary/10"
+                  >
+                    <Pencil className="w-3.5 h-3.5" /> Edit
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -251,6 +262,7 @@ function SettingsPage() {
       </section>
 
       {addOpen && clinic && <AddStaffModal clinicId={clinic.id} onClose={() => setAddOpen(false)} onSaved={() => { setAddOpen(false); loadStaff(); }} />}
+      {editing && <EditStaffModal staff={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); loadStaff(); }} />}
     </div>
   );
 }
