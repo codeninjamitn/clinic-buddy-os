@@ -343,7 +343,7 @@ function EditStaffModal({ staff, onClose, onSaved }: { staff: Staff; onClose: ()
   const [email, setEmail] = useState(staff.email ?? "");
   const [phone, setPhone] = useState(staff.phone ?? "");
   const [saving, setSaving] = useState(false);
-  const [resetting, setResetting] = useState<"email" | "sms" | "temp" | null>(null);
+  const [resetting, setResetting] = useState<"email" | "temp" | null>(null);
   const [tempPw, setTempPw] = useState("");
   const [showPw, setShowPw] = useState(false);
   const [lastSetPw, setLastSetPw] = useState<string | null>(null);
