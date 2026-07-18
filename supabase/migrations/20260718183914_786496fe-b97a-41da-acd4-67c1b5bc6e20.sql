@@ -1,0 +1,1 @@
+UPDATE public.staff SET auth_user_id = '9d9fc6a9-3c53-4df3-9e85-d7509ff8633f' WHERE id = '40137a78-53e6-4d93-97fb-398e4e6bf42f';
