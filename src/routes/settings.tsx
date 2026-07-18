@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useClinic } from "@/lib/auth";
 import { useRole } from "@/context/RoleContext";
-import { setStaffPassword } from "@/lib/staff.functions";
+import { setStaffPassword, removeStaffMember } from "@/lib/staff.functions";
 import type { Staff, Role } from "@/types/database";
 import { Upload, Plus, CheckCircle2, X, Loader2, Lock, Star, Trash2, Pencil, Mail, Smartphone, KeyRound, RefreshCw, Copy, Eye, EyeOff } from "lucide-react";
 import { AddSpecialityModal } from "@/components/modals/AddSpecialityModal";
@@ -15,13 +15,15 @@ export const Route = createFileRoute("/settings")({ component: SettingsPage });
 
 function SettingsPage() {
   const { clinic, refresh } = useClinic();
-  const { can } = useRole();
+  const { can, staffId } = useRole();
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [staff, setStaff] = useState<Staff[]>([]);
   const [addOpen, setAddOpen] = useState(false);
   const [editing, setEditing] = useState<Staff | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
+  const removeStaffFn = useServerFn(removeStaffMember);
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -79,6 +81,28 @@ function SettingsPage() {
     const { error } = await supabase.from("staff").update({ is_active: !s.is_active }).eq("id", s.id);
     if (error) return toast.error(error.message);
     loadStaff();
+  };
+
+  const removeStaff = async (s: Staff) => {
+    if (s.id === staffId) return toast.error("You cannot remove your own account.");
+    const ok = confirm(
+      `Remove ${s.name} from this clinic?\n\nThis deletes their staff record and revokes their sign-in access if this was their only clinic. This cannot be undone.`
+    );
+    if (!ok) return;
+    setRemovingId(s.id);
+    try {
+      const res = await removeStaffFn({ data: { staffId: s.id, revokeAuth: true } });
+      toast.success(
+        res?.authRevoked
+          ? `${s.name} removed and sign-in access revoked`
+          : `${s.name} removed from clinic`
+      );
+      loadStaff();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to remove staff");
+    } finally {
+      setRemovingId(null);
+    }
   };
 
   if (!can("access_settings")) {
@@ -251,12 +275,22 @@ function SettingsPage() {
                   </div>
                 </td>
                 <td className="px-6 py-3 text-right">
-                  <button
-                    onClick={() => setEditing(s)}
-                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-semibold text-primary hover:bg-primary/10"
-                  >
-                    <Pencil className="w-3.5 h-3.5" /> Edit
-                  </button>
+                  <div className="inline-flex items-center gap-1 justify-end">
+                    <button
+                      onClick={() => setEditing(s)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-semibold text-primary hover:bg-primary/10"
+                    >
+                      <Pencil className="w-3.5 h-3.5" /> Edit
+                    </button>
+                    <button
+                      onClick={() => removeStaff(s)}
+                      disabled={removingId === s.id || s.id === staffId}
+                      title={s.id === staffId ? "You cannot remove your own account" : "Remove from clinic and revoke access"}
+                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {removingId === s.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />} Remove
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
