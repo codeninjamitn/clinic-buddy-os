@@ -169,11 +169,13 @@ export function AddClinicWizard({ onClose }: { onClose: (created: boolean) => vo
         {/* Step content */}
         <div className="min-h-[280px]">
           {step === 0 && <ClinicStep value={clinic} onChange={setClinic} />}
-          {step === 1 && <AdminStep value={admin} onChange={setAdmin} />}
-          {step === 2 && <TeamStep value={team} onChange={setTeam} />}
-          {step === 3 && <InventoryStep value={inventory} onChange={setInventory} />}
-          {step === 4 && <ReviewStep clinic={clinic} admin={admin} team={team} inventory={inventory} />}
+          {step === 1 && <SpecialityStep all={allSpecs} selected={specialityIds} onChange={setSpecialityIds} />}
+          {step === 2 && <AdminStep value={admin} onChange={setAdmin} />}
+          {step === 3 && <TeamStep value={team} onChange={setTeam} />}
+          {step === 4 && <InventoryStep value={inventory} onChange={setInventory} />}
+          {step === 5 && <ReviewStep clinic={clinic} admin={admin} team={team} inventory={inventory} specialityIds={specialityIds} allSpecs={allSpecs} />}
         </div>
+
 
         {/* Footer */}
         <div className="flex items-center justify-between mt-6 pt-4" style={{ borderTop: "1px solid #1A4055" }}>
