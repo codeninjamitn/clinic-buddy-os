@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import type { Clinic } from "@/types/database";
+import type { Clinic, ClinicSpeciality, Speciality } from "@/types/database";
 
 // ---------- helpers ----------
 const PALETTE = ["#028090", "#02C39A", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899", "#10B981"];
