@@ -207,7 +207,10 @@ function SettingsPage() {
         })()}
       </section>
 
+      <SpecialitiesSection />
+
       <section className="card-surface overflow-hidden">
+
         <div className="p-6 pb-4 flex items-center justify-between">
           <h3 className="text-base font-semibold text-navy">Staff Management</h3>
           <button onClick={() => setAddOpen(true)} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90">
