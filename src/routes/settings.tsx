@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useClinic } from "@/lib/auth";
 import { useRole } from "@/context/RoleContext";
-import { setStaffPassword } from "@/lib/staff.functions";
+import { setStaffPassword, removeStaffMember } from "@/lib/staff.functions";
 import type { Staff, Role } from "@/types/database";
 import { Upload, Plus, CheckCircle2, X, Loader2, Lock, Star, Trash2, Pencil, Mail, Smartphone, KeyRound, RefreshCw, Copy, Eye, EyeOff } from "lucide-react";
 import { AddSpecialityModal } from "@/components/modals/AddSpecialityModal";
