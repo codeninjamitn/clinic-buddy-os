@@ -28,7 +28,7 @@ export function DentalAssessment({ patientId, clinicId, onReady }: AssessmentPro
   }, [complaint, findings, teeth, plan, next, clinicId, patientId, onReady]);
 
   const setTooth = (n: number, patch: Partial<{ condition: ToothCondition; note: string }>) =>
-    setTeeth((t) => ({ ...t, [n]: { condition: t[n]?.condition ?? "Healthy", ...t[n], ...patch } }));
+    setTeeth((t) => ({ ...t, [n]: { condition: patch.condition ?? t[n]?.condition ?? "Healthy", note: patch.note ?? t[n]?.note } }));
 
   const Tooth = ({ n }: { n: number }) => {
     const state = teeth[n];
