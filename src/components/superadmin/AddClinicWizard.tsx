@@ -316,7 +316,22 @@ function InventoryStep({ value, onChange }: { value: InventoryRow[]; onChange: (
   );
 }
 
-function ReviewStep({ clinic, admin, team, inventory }: { clinic: ClinicForm; admin: AdminForm; team: TeamMember[]; inventory: InventoryRow[] }) {
+function SpecialityStep({ all, selected, onChange }: { all: Speciality[]; selected: string[]; onChange: (ids: string[]) => void }) {
+  if (all.length === 0) {
+    return <p className="text-[13px]" style={{ color: "#7FBBC5" }}>Loading specialities…</p>;
+  }
+  return (
+    <div className="space-y-3">
+      <p className="text-[12px]" style={{ color: "#7FBBC5" }}>
+        Select the disciplines this clinic offers. The first one you pick is the primary speciality.
+      </p>
+      <SpecialityPicker dark all={all} selected={selected} onChange={onChange} />
+    </div>
+  );
+}
+
+function ReviewStep({ clinic, admin, team, inventory, specialityIds, allSpecs }: { clinic: ClinicForm; admin: AdminForm; team: TeamMember[]; inventory: InventoryRow[]; specialityIds: string[]; allSpecs: Speciality[] }) {
+  const specs = specialityIds.map((id) => allSpecs.find((s) => s.id === id)).filter(Boolean) as Speciality[];
   return (
     <div className="space-y-4 text-[13px]">
       <Section title="Clinic">
@@ -325,7 +340,11 @@ function ReviewStep({ clinic, admin, team, inventory }: { clinic: ClinicForm; ad
         <p style={{ color: "#7FBBC5" }}>{clinic.phone} {clinic.email && `· ${clinic.email}`}</p>
         <p style={{ color: "#7FBBC5" }}>Plan: <b style={{ color: "#02C39A" }}>{clinic.plan}</b> · ABDM: {clinic.abdm_connected ? "Yes" : "No"}</p>
       </Section>
+      <Section title={`Specialities (${specs.length})`}>
+        <p style={{ color: "#7FBBC5" }}>{specs.map((s, i) => `${s.icon} ${s.name}${i === 0 ? " (primary)" : ""}`).join(" · ") || "None"}</p>
+      </Section>
       <Section title="Admin"><p>{admin.name} — {admin.email} — {admin.phone}</p></Section>
+
       <Section title={`Team (${team.length})`}>
         {team.length === 0 ? <p style={{ color: "#7FBBC5" }}>No team members.</p> : team.map((m, i) => (
           <p key={i} style={{ color: "#7FBBC5" }}>• {m.name} — {m.role} {m.email && `(${m.email})`}</p>
