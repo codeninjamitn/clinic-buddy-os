@@ -42,6 +42,8 @@ function BillingPage() {
   const [loading, setLoading] = useState(true);
   const [totals, setTotals] = useState({ paid: 0, pending: 0, overdue: 0 });
   const [viewInvoice, setViewInvoice] = useState<Invoice | null>(null);
+  const [collectInvoice, setCollectInvoice] = useState<Invoice | null>(null);
+  const canCollect = can("create_invoice");
 
   const load = async () => {
     if (!clinicId) return;
