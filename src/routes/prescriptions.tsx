@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Search, Stethoscope, Pill, ClipboardList } from "lucide-react";
+import { Search, Stethoscope, Pill, ClipboardList, Activity, FileText, StickyNote, CalendarCheck, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useClinic, colorFor, initials as initialsOf, ageFromDob } from "@/lib/auth";
 import { useModals } from "@/lib/modals";
