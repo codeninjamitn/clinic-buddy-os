@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Eye, Download, Plus } from "lucide-react";
+import { Eye, Download, Plus, IndianRupee } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useClinic, formatINR, initials as initialsOf } from "@/lib/auth";
 import { useModals } from "@/lib/modals";
 import { ViewInvoiceModal } from "@/components/modals/ViewInvoiceModal";
+import { CollectPaymentModal } from "@/components/modals/CollectPaymentModal";
 import { useRole } from "@/context/RoleContext";
 import type { Invoice, InvoiceStatus } from "@/types/database";
 
@@ -41,6 +42,8 @@ function BillingPage() {
   const [loading, setLoading] = useState(true);
   const [totals, setTotals] = useState({ paid: 0, pending: 0, overdue: 0 });
   const [viewInvoice, setViewInvoice] = useState<Invoice | null>(null);
+  const [collectInvoice, setCollectInvoice] = useState<Invoice | null>(null);
+  const canCollect = can("create_invoice");
 
   const load = async () => {
     if (!clinicId) return;
@@ -136,7 +139,16 @@ function BillingPage() {
                     <td className="px-4 py-3 text-right font-semibold">{formatINR(Number(inv.total))}</td>
                     <td className="px-4 py-3 text-center">{statusBadge(inv.status)}</td>
                     <td className="px-4 py-3">
-                      <div className="flex justify-end gap-1">
+                      <div className="flex justify-end items-center gap-1">
+                        {canCollect && inv.status !== "Paid" && (
+                          <button
+                            onClick={() => setCollectInvoice(inv)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors"
+                            title="Collect payment"
+                          >
+                            <IndianRupee className="w-3.5 h-3.5" /> Collect
+                          </button>
+                        )}
                         <button onClick={() => setViewInvoice(inv)} className="p-1.5 rounded hover:bg-muted" title="View"><Eye className="w-4 h-4 text-muted-foreground" /></button>
                         <button className="p-1.5 rounded hover:bg-muted" title="Download"><Download className="w-4 h-4 text-muted-foreground" /></button>
                       </div>
@@ -177,6 +189,12 @@ function BillingPage() {
       )}
 
       <ViewInvoiceModal isOpen={!!viewInvoice} onClose={() => setViewInvoice(null)} invoice={viewInvoice} />
+      <CollectPaymentModal
+        isOpen={!!collectInvoice}
+        onClose={() => setCollectInvoice(null)}
+        invoice={collectInvoice}
+        onSuccess={load}
+      />
     </div>
   );
 }
