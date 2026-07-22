@@ -35,7 +35,7 @@ export function BookAppointmentModal({ isOpen, onClose, onSuccess, prefillPatien
   const [doctorId, setDoctorId] = useState("");
   const [date, setDate] = useState(isoDate(new Date()));
   const [slot, setSlot] = useState("10:00");
-  const [type, setType] = useState<string>("General Checkup");
+  const [type, setType] = useState<string>(typesForClinic[0] ?? "General Checkup");
   const [notes, setNotes] = useState("");
   const [reminder, setReminder] = useState(true);
   const [saving, setSaving] = useState(false);
