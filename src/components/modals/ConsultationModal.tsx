@@ -80,7 +80,11 @@ export function ConsultationModal({ isOpen, onClose, onSuccess, patientId, patie
     // Persist the speciality-specific assessment record when a tab has one.
     if (assessSave.current) {
       const ok = await assessSave.current();
-      if (!ok) toast.error("Prescription saved, but assessment could not be saved.");
+      if (!ok) {
+        setSaving(false);
+        toast.error("Prescription saved, but the clinical assessment could not be saved. Please retry or copy your notes before closing.");
+        return;
+      }
     }
     setSaving(false);
     toast.success(`Consultation saved for ${patientName ?? "patient"}`);
