@@ -1031,6 +1031,7 @@ export type Database = {
           medicines: Json | null
           notes: string | null
           patient_id: string | null
+          symptoms: string | null
         }
         Insert: {
           appointment_id?: string | null
@@ -1043,6 +1044,7 @@ export type Database = {
           medicines?: Json | null
           notes?: string | null
           patient_id?: string | null
+          symptoms?: string | null
         }
         Update: {
           appointment_id?: string | null
@@ -1055,6 +1057,7 @@ export type Database = {
           medicines?: Json | null
           notes?: string | null
           patient_id?: string | null
+          symptoms?: string | null
         }
         Relationships: [
           {
