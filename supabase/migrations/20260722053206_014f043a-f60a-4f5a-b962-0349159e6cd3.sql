@@ -1,0 +1,1 @@
+ALTER TABLE public.appointments DROP CONSTRAINT IF EXISTS appointments_type_check;
