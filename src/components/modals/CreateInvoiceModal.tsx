@@ -38,7 +38,7 @@ export function CreateInvoiceModal({ isOpen, onClose, onSuccess }: Props) {
   useEffect(() => {
     if (!isOpen || !clinicId) return;
     supabase.from("patients").select("*").eq("clinic_id", clinicId).order("name").then(({ data }) => setPatients((data as Patient[]) ?? []));
-    supabase.from("staff").select("*").eq("clinic_id", clinicId).eq("role", "Doctor").order("name").then(({ data }) => {
+    supabase.from("staff").select("*").eq("clinic_id", clinicId).in("role", ["Doctor", "Admin"]).eq("is_active", true).order("name").then(({ data }) => {
       const list = (data as Staff[]) ?? [];
       setDoctors(list);
       if (list[0]) setDoctorId(list[0].id);
