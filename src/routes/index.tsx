@@ -332,7 +332,7 @@ function Footer({ onGetStarted }: { onGetStarted: () => void }) {
               <li><a href="#modules" className="text-muted-foreground hover:text-primary transition-colors">Modules</a></li>
               <li><a href="#for" className="text-muted-foreground hover:text-primary transition-colors">Who it's for</a></li>
               <li><Link to="/login" className="text-muted-foreground hover:text-primary transition-colors">Sign in</Link></li>
-              <li><Link to="/login" className="text-muted-foreground hover:text-primary transition-colors">Get started</Link></li>
+              <li><button type="button" onClick={onGetStarted} className="text-muted-foreground hover:text-primary transition-colors text-left">Get started</button></li>
             </ul>
           </div>
 
