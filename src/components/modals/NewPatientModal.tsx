@@ -16,7 +16,7 @@ export function NewPatientModal({ isOpen, onClose, onSuccess }: Props) {
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [dob, setDob] = useState("");
+  const [age, setAge] = useState("");
   const [gender, setGender] = useState<"Male" | "Female" | "Other">("Male");
   const [bloodGroup, setBloodGroup] = useState("");
   const [email, setEmail] = useState("");
@@ -28,7 +28,7 @@ export function NewPatientModal({ isOpen, onClose, onSuccess }: Props) {
 
   useEffect(() => {
     if (!isOpen) return;
-    setName(""); setPhone(""); setDob(""); setGender("Male"); setBloodGroup("");
+    setName(""); setPhone(""); setAge(""); setGender("Male"); setBloodGroup("");
     setEmail(""); setAddress(""); setAllergies(""); setEmergencyName(""); setEmergencyPhone("");
   }, [isOpen]);
 
