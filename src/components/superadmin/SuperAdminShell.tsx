@@ -118,6 +118,17 @@ export function SuperAdminShell() {
         <main className="flex-1 p-6 max-w-[1500px]">
           {tab === "overview" && <OverviewPage onAdd={() => setWizardOpen(true)} />}
           {tab === "clinics" && <AllClinicsPage onAdd={() => setWizardOpen(true)} />}
+          {tab === "requests" && (
+            <SignupRequestsPage
+              onLaunch={async (r) => {
+                await supabase
+                  .from("clinic_signup_requests")
+                  .update({ status: "contacted", reviewed_at: new Date().toISOString() })
+                  .eq("id", r.id);
+                setWizardOpen(true);
+              }}
+            />
+          )}
           {tab === "log" && <ActivityLogPage />}
           {tab === "settings" && <PlatformSettingsPage />}
         </main>
