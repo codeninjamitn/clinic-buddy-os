@@ -36,7 +36,7 @@ function Landing() {
   );
 }
 
-function Header() {
+function Header({ onGetStarted }: { onGetStarted: () => void }) {
   return (
     <header className="sticky top-0 z-30 bg-background/80 backdrop-blur border-b border-border">
       <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
@@ -58,12 +58,13 @@ function Header() {
           >
             Sign in
           </Link>
-          <Link
-            to="/login"
+          <button
+            type="button"
+            onClick={onGetStarted}
             className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold px-3.5 py-2 rounded-md bg-primary text-white hover:bg-primary/90 transition-colors"
           >
             Get started <ArrowRight className="w-4 h-4" />
-          </Link>
+          </button>
         </div>
       </div>
     </header>
