@@ -36,6 +36,7 @@ export function ConsultationModal({ isOpen, onClose, onSuccess, patientId, patie
   const { clinic, specialities, primarySpeciality } = useClinic();
   const { staffId } = useRole();
   const [diagnosis, setDiagnosis] = useState("");
+  const [symptoms, setSymptoms] = useState("");
   const [meds, setMeds] = useState<Medicine[]>([blankMed()]);
   const [notes, setNotes] = useState("");
   const [followUp, setFollowUp] = useState("");
@@ -46,7 +47,7 @@ export function ConsultationModal({ isOpen, onClose, onSuccess, patientId, patie
 
   useEffect(() => {
     if (!isOpen) return;
-    setDiagnosis(""); setMeds([blankMed()]); setNotes(""); setFollowUp("");
+    setDiagnosis(""); setSymptoms(""); setMeds([blankMed()]); setNotes(""); setFollowUp("");
     const primary = (primarySpeciality?.slug as SpecialitySlug | undefined) ?? "none";
     setTab(primary in ASSESSMENTS ? primary : "none");
     assessSave.current = null;
