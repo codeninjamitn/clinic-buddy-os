@@ -74,9 +74,9 @@ export function ConsultationModal({ isOpen, onClose, onSuccess, patientId, patie
     const cleanMeds = meds.filter((m) => m.name.trim());
     const { error } = await supabase.from("prescriptions").insert({
       clinic_id: clinic?.id, patient_id: patientId, doctor_id: staffId,
-      diagnosis, medicines: cleanMeds as unknown as never,
+      diagnosis, symptoms: symptoms.trim() || null, medicines: cleanMeds as unknown as never,
       notes: notes || null, follow_up_date: followUp || null,
-    });
+    } as never);
     if (error) { setSaving(false); toast.error(error.message); return; }
     // Persist the speciality-specific assessment record when a tab has one.
     if (assessSave.current) {
