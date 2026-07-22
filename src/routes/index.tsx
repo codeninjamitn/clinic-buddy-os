@@ -19,16 +19,19 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
+  const [signupOpen, setSignupOpen] = useState(false);
+  const openSignup = () => setSignupOpen(true);
   return (
     <div className="min-h-screen bg-background text-navy">
-      <Header />
-      <Hero />
+      <Header onGetStarted={openSignup} />
+      <Hero onGetStarted={openSignup} />
       <Trust />
       <Features />
       <PerfectFor />
       <Modules />
-      <CTA />
-      <Footer />
+      <CTA onGetStarted={openSignup} />
+      <Footer onGetStarted={openSignup} />
+      <GetStartedModal isOpen={signupOpen} onClose={() => setSignupOpen(false)} />
     </div>
   );
 }
