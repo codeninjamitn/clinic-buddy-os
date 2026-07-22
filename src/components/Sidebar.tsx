@@ -2,7 +2,7 @@ import { Link as RouterLink, useRouterState } from "@tanstack/react-router";
 const Link = RouterLink as any;
 import {
   LayoutDashboard, Calendar, Users, Receipt, FlaskConical, Package, Settings,
-  Stethoscope,
+  Stethoscope, ClipboardList,
 } from "lucide-react";
 import { useRole } from "@/context/RoleContext";
 import { useClinic } from "@/lib/auth";
@@ -13,6 +13,7 @@ const nav: { to: string; label: string; icon: typeof LayoutDashboard; exact?: bo
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/appointments", label: "Appointments", icon: Calendar, perm: "view_appointments" },
   { to: "/patients", label: "Patients", icon: Users, perm: "view_patients" },
+  { to: "/prescriptions", label: "Diagnosis & Rx", icon: ClipboardList, perm: "write_prescription" },
   { to: "/billing", label: "Billing", icon: Receipt, perm: "view_billing" },
   { to: "/lab-reports", label: "Lab Reports", icon: FlaskConical, perm: "view_lab_reports" },
   { to: "/inventory", label: "Inventory", icon: Package, perm: "view_inventory" },

@@ -36,6 +36,7 @@ export function ConsultationModal({ isOpen, onClose, onSuccess, patientId, patie
   const { clinic, specialities, primarySpeciality } = useClinic();
   const { staffId } = useRole();
   const [diagnosis, setDiagnosis] = useState("");
+  const [symptoms, setSymptoms] = useState("");
   const [meds, setMeds] = useState<Medicine[]>([blankMed()]);
   const [notes, setNotes] = useState("");
   const [followUp, setFollowUp] = useState("");
@@ -46,7 +47,7 @@ export function ConsultationModal({ isOpen, onClose, onSuccess, patientId, patie
 
   useEffect(() => {
     if (!isOpen) return;
-    setDiagnosis(""); setMeds([blankMed()]); setNotes(""); setFollowUp("");
+    setDiagnosis(""); setSymptoms(""); setMeds([blankMed()]); setNotes(""); setFollowUp("");
     const primary = (primarySpeciality?.slug as SpecialitySlug | undefined) ?? "none";
     setTab(primary in ASSESSMENTS ? primary : "none");
     assessSave.current = null;
@@ -73,9 +74,9 @@ export function ConsultationModal({ isOpen, onClose, onSuccess, patientId, patie
     const cleanMeds = meds.filter((m) => m.name.trim());
     const { error } = await supabase.from("prescriptions").insert({
       clinic_id: clinic?.id, patient_id: patientId, doctor_id: staffId,
-      diagnosis, medicines: cleanMeds as unknown as never,
+      diagnosis, symptoms: symptoms.trim() || null, medicines: cleanMeds as unknown as never,
       notes: notes || null, follow_up_date: followUp || null,
-    });
+    } as never);
     if (error) { setSaving(false); toast.error(error.message); return; }
     // Persist the speciality-specific assessment record when a tab has one.
     if (assessSave.current) {
@@ -129,6 +130,12 @@ export function ConsultationModal({ isOpen, onClose, onSuccess, patientId, patie
         )}
 
         <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1.5">Symptoms (as reported by patient)</label>
+            <textarea value={symptoms} onChange={(e) => setSymptoms(e.target.value)} rows={2}
+              placeholder="e.g. Sore throat for 3 days, mild fever, difficulty swallowing" className="w-full px-3 py-2 text-sm rounded-md border border-border resize-none" />
+          </div>
+
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1.5">Diagnosis</label>
             <textarea value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} rows={2}

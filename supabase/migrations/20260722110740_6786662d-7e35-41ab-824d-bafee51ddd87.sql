@@ -1,0 +1,1 @@
+ALTER TABLE public.prescriptions ADD COLUMN IF NOT EXISTS symptoms text;
