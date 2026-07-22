@@ -197,6 +197,7 @@ function BillingPage() {
         invoice={collectInvoice}
         onSuccess={load}
       />
+      <ShareInvoiceModal isOpen={!!shareInvoice} onClose={() => setShareInvoice(null)} invoice={shareInvoice} />
     </div>
   );
 }
