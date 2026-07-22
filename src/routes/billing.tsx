@@ -189,6 +189,12 @@ function BillingPage() {
       )}
 
       <ViewInvoiceModal isOpen={!!viewInvoice} onClose={() => setViewInvoice(null)} invoice={viewInvoice} />
+      <CollectPaymentModal
+        isOpen={!!collectInvoice}
+        onClose={() => setCollectInvoice(null)}
+        invoice={collectInvoice}
+        onSuccess={load}
+      />
     </div>
   );
 }
