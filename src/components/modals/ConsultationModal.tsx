@@ -131,6 +131,12 @@ export function ConsultationModal({ isOpen, onClose, onSuccess, patientId, patie
 
         <div className="space-y-4">
           <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1.5">Symptoms (as reported by patient)</label>
+            <textarea value={symptoms} onChange={(e) => setSymptoms(e.target.value)} rows={2}
+              placeholder="e.g. Sore throat for 3 days, mild fever, difficulty swallowing" className="w-full px-3 py-2 text-sm rounded-md border border-border resize-none" />
+          </div>
+
+          <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1.5">Diagnosis</label>
             <textarea value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} rows={2}
               placeholder="e.g. Acute pharyngitis" className="w-full px-3 py-2 text-sm rounded-md border border-border resize-none" />
