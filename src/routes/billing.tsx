@@ -6,6 +6,7 @@ import { useClinic, formatINR, initials as initialsOf } from "@/lib/auth";
 import { useModals } from "@/lib/modals";
 import { ViewInvoiceModal } from "@/components/modals/ViewInvoiceModal";
 import { CollectPaymentModal } from "@/components/modals/CollectPaymentModal";
+import { ShareInvoiceModal } from "@/components/modals/ShareInvoiceModal";
 import { useRole } from "@/context/RoleContext";
 import type { Invoice, InvoiceStatus } from "@/types/database";
 
