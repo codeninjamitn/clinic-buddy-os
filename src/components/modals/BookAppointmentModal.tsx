@@ -35,7 +35,7 @@ export function BookAppointmentModal({ isOpen, onClose, onSuccess, prefillPatien
   const [doctorId, setDoctorId] = useState("");
   const [date, setDate] = useState(isoDate(new Date()));
   const [slot, setSlot] = useState("10:00");
-  const [type, setType] = useState<string>("General Checkup");
+  const [type, setType] = useState<string>(typesForClinic[0] ?? "General Checkup");
   const [notes, setNotes] = useState("");
   const [reminder, setReminder] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -54,7 +54,7 @@ export function BookAppointmentModal({ isOpen, onClose, onSuccess, prefillPatien
     setPatientQuery("");
     setNotes("");
     setSlot("10:00");
-    setType("General Checkup");
+    setType(typesForClinic[0] ?? "General Checkup");
     setDate(isoDate(new Date()));
     if (prefillPatientId) {
       setPatientId(prefillPatientId);
@@ -64,6 +64,15 @@ export function BookAppointmentModal({ isOpen, onClose, onSuccess, prefillPatien
       setPatientName("");
     }
   }, [isOpen, prefillPatientId, prefillPatientName]);
+
+  // Ensure the selected type is always one the clinic actually offers
+  // (specialities may load asynchronously after the modal opens).
+  useEffect(() => {
+    if (!isOpen) return;
+    if (typesForClinic.length && !typesForClinic.includes(type)) {
+      setType(typesForClinic[0]);
+    }
+  }, [isOpen, typesForClinic, type]);
 
   // Load patients + doctors on open
   useEffect(() => {
