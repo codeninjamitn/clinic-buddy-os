@@ -42,14 +42,13 @@ export function buildInvoicePdf(inv: Invoice, clinic: Clinic | null): jsPDF {
   doc.setFont("helvetica", "bold"); doc.setFontSize(10);
   doc.text("Bill To", M, y);
   doc.text("Doctor", pageW / 2, y);
-  void 0;
   doc.setFont("helvetica", "normal"); y += 14;
   doc.text(inv.patients?.name ?? "—", M, y);
   doc.text(inv.staff?.name ?? "—", pageW / 2, y);
   y += 24;
 
   // Items table
-  doc.setFillColor(245); doc.rect(M, y, pageW - 2 * M, 22, "F");
+  doc.setFillColor(245, 245, 245); doc.rect(M, y, pageW - 2 * M, 22, "F");
   doc.setFont("helvetica", "bold"); doc.setFontSize(10);
   doc.text("Description", M + 10, y + 15);
   doc.text("Amount", pageW - M - 10, y + 15, { align: "right" });
