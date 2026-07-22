@@ -21,9 +21,17 @@ export function buildInvoicePdf(inv: Invoice, clinic: Clinic | null): jsPDF {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   y += 16;
-  if (clinic?.address) { doc.text(clinic.address, M, y); y += 12; }
+  // Reserve room on the right for the invoice meta block (title/number/date/status)
+  const leftMaxWidth = pageW - 2 * M - 180;
+  if (clinic?.address) {
+    const addressLines = doc.splitTextToSize(clinic.address, leftMaxWidth).slice(0, 3);
+    addressLines.forEach((ln: string) => { doc.text(ln, M, y); y += 12; });
+  }
   const line2 = [clinic?.phone, clinic?.gst_number ? `GSTIN: ${clinic.gst_number}` : null].filter(Boolean).join("  ·  ");
-  if (line2) { doc.text(line2, M, y); y += 12; }
+  if (line2) {
+    const line2Wrapped = doc.splitTextToSize(line2, leftMaxWidth);
+    line2Wrapped.forEach((ln: string) => { doc.text(ln, M, y); y += 12; });
+  }
 
   // Invoice title
   doc.setFont("helvetica", "bold");
