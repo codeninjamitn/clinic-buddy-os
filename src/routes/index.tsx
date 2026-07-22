@@ -268,21 +268,28 @@ function Modules() {
   );
 }
 
-function CTA() {
+function CTA({ onGetStarted }: { onGetStarted: () => void }) {
   return (
     <section className="py-20">
       <div className="max-w-4xl mx-auto px-5">
         <div className="rounded-2xl bg-gradient-to-br from-primary to-[#026470] text-white p-10 md:p-14 text-center shadow-xl">
           <h2 className="text-3xl md:text-4xl font-bold">Ready when your next patient arrives.</h2>
           <p className="mt-3 text-white/85 max-w-xl mx-auto">
-            Sign in to your ClinicOS dashboard and start managing appointments, patients and billing in minutes.
+            Tell us about your clinic and our team will set it up for you within one business day.
           </p>
-          <div className="mt-7">
-            <Link
-              to="/login"
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={onGetStarted}
               className="inline-flex items-center gap-2 px-6 py-3 rounded-md bg-white text-primary text-sm font-semibold hover:bg-white/90 transition-colors"
             >
-              Sign in to your clinic <ArrowRight className="w-4 h-4" />
+              Get started <ArrowRight className="w-4 h-4" />
+            </button>
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-md border border-white/40 text-white text-sm font-semibold hover:bg-white/10 transition-colors"
+            >
+              Sign in
             </Link>
           </div>
         </div>
