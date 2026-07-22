@@ -51,7 +51,7 @@ function BillingPage() {
     if (!clinicId) return;
     setLoading(true);
     const [list, paid, pending, overdue] = await Promise.all([
-      supabase.from("invoices").select("*, patients(name), staff(name)").eq("clinic_id", clinicId).order("created_at", { ascending: false }),
+      supabase.from("invoices").select("*, patients(name, phone, email), staff(name)").eq("clinic_id", clinicId).order("created_at", { ascending: false }),
       supabase.from("invoices").select("total").eq("clinic_id", clinicId).eq("status", "Paid"),
       supabase.from("invoices").select("total").eq("clinic_id", clinicId).eq("status", "Pending"),
       supabase.from("invoices").select("total").eq("clinic_id", clinicId).eq("status", "Overdue"),
