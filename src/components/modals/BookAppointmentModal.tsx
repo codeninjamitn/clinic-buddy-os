@@ -79,7 +79,7 @@ export function BookAppointmentModal({ isOpen, onClose, onSuccess, prefillPatien
     if (!isOpen || !clinicId) return;
     supabase.from("patients").select("*").eq("clinic_id", clinicId).order("name")
       .then(({ data }) => setPatients((data as Patient[]) ?? []));
-    supabase.from("staff").select("*").eq("clinic_id", clinicId).eq("role", "Doctor").eq("is_active", true).order("name")
+    supabase.from("staff").select("*").eq("clinic_id", clinicId).in("role", ["Doctor", "Admin"]).eq("is_active", true).order("name")
       .then(({ data }) => {
         const list = (data as Staff[]) ?? [];
         setDoctors(list);
