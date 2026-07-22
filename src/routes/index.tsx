@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   Stethoscope, ArrowRight, Clock, Users, Zap, ShieldCheck, Smartphone,
   Calendar, FlaskConical, Receipt, Package, CheckCircle2, MessageCircle,
 } from "lucide-react";
+import { GetStartedModal } from "@/components/modals/GetStartedModal";
 
 export const Route = createFileRoute("/")({
   head: () => ({
