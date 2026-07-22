@@ -9,7 +9,7 @@ import type { Patient, Appointment, Invoice } from "@/types/database";
 type Tab = "Overview" | "Visit History" | "Prescriptions" | "Billing";
 
 interface PrescriptionRow {
-  id: string; diagnosis: string | null; medicines: any; notes: string | null;
+  id: string; diagnosis: string | null; symptoms: string | null; medicines: any; notes: string | null;
   follow_up_date: string | null; created_at: string;
 }
 
