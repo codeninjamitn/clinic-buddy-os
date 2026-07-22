@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  LayoutDashboard, Building2, PlusCircle, ActivitySquare, Settings, Bell, ChevronDown, LogOut,
+  LayoutDashboard, Building2, PlusCircle, ActivitySquare, Settings, Bell, ChevronDown, LogOut, Inbox,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { listClinicsWithStats } from "@/lib/superadmin.functions";
@@ -11,8 +11,9 @@ import { AllClinicsPage } from "./AllClinicsPage";
 import { ActivityLogPage } from "./ActivityLogPage";
 import { PlatformSettingsPage } from "./PlatformSettingsPage";
 import { AddClinicWizard } from "./AddClinicWizard";
+import { SignupRequestsPage } from "./SignupRequestsPage";
 
-type Tab = "overview" | "clinics" | "add" | "log" | "settings";
+type Tab = "overview" | "clinics" | "add" | "requests" | "log" | "settings";
 
 export function SuperAdminShell() {
   const [tab, setTab] = useState<Tab>("overview");
