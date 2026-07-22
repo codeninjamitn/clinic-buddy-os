@@ -298,7 +298,7 @@ function CTA({ onGetStarted }: { onGetStarted: () => void }) {
   );
 }
 
-function Footer() {
+function Footer({ onGetStarted }: { onGetStarted: () => void }) {
   const year = new Date().getFullYear();
   return (
     <footer className="border-t border-border bg-[#F4FAFB]">
