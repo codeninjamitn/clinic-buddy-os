@@ -101,7 +101,7 @@ export interface Invoice {
   payment_method: PaymentMethod | null;
   status: InvoiceStatus;
   created_at: string;
-  patients?: { name: string } | null;
+  patients?: { name: string; phone?: string | null; email?: string | null } | null;
   staff?: { name: string } | null;
 }
 
