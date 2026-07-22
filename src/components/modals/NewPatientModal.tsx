@@ -74,7 +74,7 @@ export function NewPatientModal({ isOpen, onClose, onSuccess }: Props) {
         <div className="grid grid-cols-2 gap-3">
           <Field label="Name *" value={name} onChange={setName} className="col-span-2" />
           <Field label="Phone *" value={phone} onChange={setPhone} placeholder="+91 ..." />
-          <Field label="Date of birth" type="date" value={dob} onChange={setDob} />
+          <Field label="Age" type="number" value={age} onChange={setAge} placeholder="e.g. 32" />
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1">Gender</label>
             <select value={gender} onChange={(e) => setGender(e.target.value as any)} className="w-full px-3 py-2 text-sm rounded-md border border-border bg-white">
