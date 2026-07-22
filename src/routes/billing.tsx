@@ -4,6 +4,7 @@ import { Eye, Download, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useClinic, formatINR, initials as initialsOf } from "@/lib/auth";
 import { useModals } from "@/lib/modals";
+import { ViewInvoiceModal } from "@/components/modals/ViewInvoiceModal";
 import { useRole } from "@/context/RoleContext";
 import type { Invoice, InvoiceStatus } from "@/types/database";
 
@@ -39,6 +40,7 @@ function BillingPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [totals, setTotals] = useState({ paid: 0, pending: 0, overdue: 0 });
+  const [viewInvoice, setViewInvoice] = useState<Invoice | null>(null);
 
   const load = async () => {
     if (!clinicId) return;
@@ -135,7 +137,7 @@ function BillingPage() {
                     <td className="px-4 py-3 text-center">{statusBadge(inv.status)}</td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-1">
-                        <button className="p-1.5 rounded hover:bg-muted" title="View"><Eye className="w-4 h-4 text-muted-foreground" /></button>
+                        <button onClick={() => setViewInvoice(inv)} className="p-1.5 rounded hover:bg-muted" title="View"><Eye className="w-4 h-4 text-muted-foreground" /></button>
                         <button className="p-1.5 rounded hover:bg-muted" title="Download"><Download className="w-4 h-4 text-muted-foreground" /></button>
                       </div>
                     </td>
@@ -174,6 +176,7 @@ function BillingPage() {
         </div>
       )}
 
+      <ViewInvoiceModal isOpen={!!viewInvoice} onClose={() => setViewInvoice(null)} invoice={viewInvoice} />
     </div>
   );
 }
