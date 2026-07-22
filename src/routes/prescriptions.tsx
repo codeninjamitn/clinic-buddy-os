@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Search, Stethoscope, Pill, ClipboardList } from "lucide-react";
+import { Search, Stethoscope, Pill, ClipboardList, Activity, FileText, StickyNote, CalendarCheck, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useClinic, colorFor, initials as initialsOf, ageFromDob } from "@/lib/auth";
 import { useModals } from "@/lib/modals";
@@ -179,42 +179,116 @@ function PrescriptionsPage() {
                 ) : rxs.length === 0 ? (
                   <div className="text-sm text-muted-foreground text-center py-12">No consultations recorded yet.</div>
                 ) : (
-                  <ul className="space-y-3">
-                    {rxs.map((r) => {
+                  <ul className="space-y-4">
+                    {rxs.map((r, idx) => {
                       const meds = Array.isArray(r.medicines) ? r.medicines : [];
+                      const created = new Date(r.created_at);
+                      const dateLabel = created.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+                      const timeLabel = created.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+                      const isLatest = idx === 0;
                       return (
-                        <li key={r.id} className="border border-border rounded-lg p-4">
-                          <div className="flex items-center justify-between mb-2">
-                            <p className="text-sm font-semibold text-navy">{r.diagnosis ?? "Consultation"}</p>
-                            <span className="text-[11px] text-muted-foreground">
-                              {new Date(r.created_at).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
-                              {r.doctor?.name && ` · ${r.doctor.name}`}
-                            </span>
+                        <li key={r.id} className="border border-border rounded-lg overflow-hidden bg-white">
+                          {/* Header strip */}
+                          <div className="flex items-center justify-between px-4 py-2.5 bg-[#F5FAF8] border-b border-border">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+                                Visit #{rxs.length - idx}
+                              </span>
+                              {isLatest && (
+                                <span className="text-[10px] font-semibold text-primary bg-[#E1F5EE] px-1.5 py-0.5 rounded uppercase tracking-wide">
+                                  Latest
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                              <span className="inline-flex items-center gap-1">
+                                <CalendarCheck className="w-3 h-3" />
+                                {dateLabel} · {timeLabel}
+                              </span>
+                              {r.doctor?.name && (
+                                <span className="inline-flex items-center gap-1">
+                                  <User className="w-3 h-3" />
+                                  {r.doctor.name}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                          {r.symptoms && (
-                            <p className="text-xs text-navy/80 mt-1">
-                              <span className="font-semibold text-muted-foreground">Symptoms: </span>{r.symptoms}
-                            </p>
-                          )}
-                          {meds.length > 0 && (
-                            <ul className="text-xs text-navy/80 space-y-0.5 mt-2">
-                              {meds.map((m: any, i: number) => (
-                                <li key={i} className="flex items-center gap-1.5">
-                                  <Pill className="w-3 h-3 text-primary" />
-                                  <span className="font-medium">{m.name}</span>
-                                  {m.dose && <span className="text-muted-foreground">· {m.dose}</span>}
-                                  {m.frequency && <span className="text-muted-foreground">· {m.frequency}</span>}
-                                  {m.days && <span className="text-muted-foreground">· {m.days}d</span>}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                          {r.notes && <p className="text-xs text-muted-foreground mt-2">{r.notes}</p>}
-                          {r.follow_up_date && (
-                            <p className="text-[11px] text-primary mt-2">
-                              Follow-up: {new Date(r.follow_up_date).toLocaleDateString("en-IN")}
-                            </p>
-                          )}
+
+                          <div className="p-4 space-y-3.5">
+                            {/* Diagnosis */}
+                            <section>
+                              <div className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                                <FileText className="w-3 h-3" /> Diagnosis
+                              </div>
+                              <p className="text-sm font-semibold text-navy whitespace-pre-wrap">
+                                {r.diagnosis || <span className="font-normal text-muted-foreground italic">Not recorded</span>}
+                              </p>
+                            </section>
+
+                            {/* Symptoms */}
+                            {r.symptoms && (
+                              <section>
+                                <div className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                                  <Activity className="w-3 h-3" /> Symptoms reported
+                                </div>
+                                <p className="text-sm text-navy/85 whitespace-pre-wrap">{r.symptoms}</p>
+                              </section>
+                            )}
+
+                            {/* Medicines */}
+                            {meds.length > 0 && (
+                              <section>
+                                <div className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">
+                                  <Pill className="w-3 h-3" /> Medicines ({meds.length})
+                                </div>
+                                <div className="rounded-md border border-border overflow-hidden">
+                                  <table className="w-full text-xs">
+                                    <thead className="bg-muted/50 text-muted-foreground">
+                                      <tr>
+                                        <th className="text-left font-semibold px-3 py-1.5">Name</th>
+                                        <th className="text-left font-semibold px-3 py-1.5">Dose</th>
+                                        <th className="text-left font-semibold px-3 py-1.5">Frequency</th>
+                                        <th className="text-left font-semibold px-3 py-1.5">Duration</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {meds.map((m: any, i: number) => (
+                                        <tr key={i} className="border-t border-border">
+                                          <td className="px-3 py-1.5 font-medium text-navy">{m.name || "—"}</td>
+                                          <td className="px-3 py-1.5 text-navy/80">{m.dose || "—"}</td>
+                                          <td className="px-3 py-1.5 text-navy/80">{m.frequency || "—"}</td>
+                                          <td className="px-3 py-1.5 text-navy/80">{m.days ? `${m.days} day${String(m.days) === "1" ? "" : "s"}` : "—"}</td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </section>
+                            )}
+
+                            {/* Notes */}
+                            {r.notes && (
+                              <section>
+                                <div className="flex items-center gap-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+                                  <StickyNote className="w-3 h-3" /> Notes & instructions
+                                </div>
+                                <p className="text-sm text-navy/85 whitespace-pre-wrap">{r.notes}</p>
+                              </section>
+                            )}
+
+                            {/* Follow-up */}
+                            {r.follow_up_date && (
+                              <section className="flex items-center gap-2 pt-1 border-t border-border">
+                                <CalendarCheck className="w-3.5 h-3.5 text-primary" />
+                                <span className="text-xs">
+                                  <span className="text-muted-foreground">Follow-up scheduled: </span>
+                                  <span className="font-semibold text-primary">
+                                    {new Date(r.follow_up_date).toLocaleDateString("en-IN", { weekday: "short", day: "2-digit", month: "short", year: "numeric" })}
+                                  </span>
+                                </span>
+                              </section>
+                            )}
+                          </div>
                         </li>
                       );
                     })}
