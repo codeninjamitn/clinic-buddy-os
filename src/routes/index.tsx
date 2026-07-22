@@ -71,7 +71,7 @@ function Header({ onGetStarted }: { onGetStarted: () => void }) {
   );
 }
 
-function Hero() {
+function Hero({ onGetStarted }: { onGetStarted: () => void }) {
   return (
     <section className="max-w-6xl mx-auto px-5 pt-16 pb-20 md:pt-24 md:pb-28 grid lg:grid-cols-2 gap-12 items-center">
       <div>
@@ -87,12 +87,13 @@ function Hero() {
           independent doctors and diagnostic labs. Start in 5 minutes.
         </p>
         <div className="mt-7 flex flex-wrap gap-3">
-          <Link
-            to="/login"
+          <button
+            type="button"
+            onClick={onGetStarted}
             className="inline-flex items-center gap-2 px-5 py-3 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors"
           >
-            Sign in to dashboard <ArrowRight className="w-4 h-4" />
-          </Link>
+            Get started <ArrowRight className="w-4 h-4" />
+          </button>
           <a
             href="#features"
             className="inline-flex items-center gap-2 px-5 py-3 rounded-md border border-border bg-white text-sm font-semibold hover:border-primary hover:text-primary transition-colors"
