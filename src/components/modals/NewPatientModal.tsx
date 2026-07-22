@@ -16,7 +16,7 @@ export function NewPatientModal({ isOpen, onClose, onSuccess }: Props) {
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [dob, setDob] = useState("");
+  const [age, setAge] = useState("");
   const [gender, setGender] = useState<"Male" | "Female" | "Other">("Male");
   const [bloodGroup, setBloodGroup] = useState("");
   const [email, setEmail] = useState("");
@@ -28,7 +28,7 @@ export function NewPatientModal({ isOpen, onClose, onSuccess }: Props) {
 
   useEffect(() => {
     if (!isOpen) return;
-    setName(""); setPhone(""); setDob(""); setGender("Male"); setBloodGroup("");
+    setName(""); setPhone(""); setAge(""); setGender("Male"); setBloodGroup("");
     setEmail(""); setAddress(""); setAllergies(""); setEmergencyName(""); setEmergencyPhone("");
   }, [isOpen]);
 
@@ -43,9 +43,14 @@ export function NewPatientModal({ isOpen, onClose, onSuccess }: Props) {
     if (!clinicId) return;
     if (!name.trim() || !phone.trim()) { toast.error("Name and phone are required"); return; }
     setSaving(true);
+    const ageNum = age.trim() ? parseInt(age, 10) : NaN;
+    const dobFromAge =
+      !isNaN(ageNum) && ageNum >= 0 && ageNum <= 130
+        ? `${new Date().getFullYear() - ageNum}-01-01`
+        : null;
     const { error } = await supabase.from("patients").insert({
       clinic_id: clinicId, name, phone,
-      dob: dob || null, gender, blood_group: bloodGroup || null,
+      dob: dobFromAge, gender, blood_group: bloodGroup || null,
       email: email || null, address: address || null,
       known_allergies: allergies || null,
       emergency_contact_name: emergencyName || null,
@@ -69,7 +74,7 @@ export function NewPatientModal({ isOpen, onClose, onSuccess }: Props) {
         <div className="grid grid-cols-2 gap-3">
           <Field label="Name *" value={name} onChange={setName} className="col-span-2" />
           <Field label="Phone *" value={phone} onChange={setPhone} placeholder="+91 ..." />
-          <Field label="Date of birth" type="date" value={dob} onChange={setDob} />
+          <Field label="Age" type="number" value={age} onChange={setAge} placeholder="e.g. 32" />
           <div>
             <label className="block text-xs font-medium text-muted-foreground mb-1">Gender</label>
             <select value={gender} onChange={(e) => setGender(e.target.value as any)} className="w-full px-3 py-2 text-sm rounded-md border border-border bg-white">
