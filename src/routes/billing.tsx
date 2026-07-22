@@ -4,6 +4,7 @@ import { Eye, Download, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useClinic, formatINR, initials as initialsOf } from "@/lib/auth";
 import { useModals } from "@/lib/modals";
+import { ViewInvoiceModal } from "@/components/modals/ViewInvoiceModal";
 import { useRole } from "@/context/RoleContext";
 import type { Invoice, InvoiceStatus } from "@/types/database";
 
