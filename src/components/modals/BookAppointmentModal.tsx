@@ -54,7 +54,7 @@ export function BookAppointmentModal({ isOpen, onClose, onSuccess, prefillPatien
     setPatientQuery("");
     setNotes("");
     setSlot("10:00");
-    setType("General Checkup");
+    setType(typesForClinic[0] ?? "General Checkup");
     setDate(isoDate(new Date()));
     if (prefillPatientId) {
       setPatientId(prefillPatientId);
