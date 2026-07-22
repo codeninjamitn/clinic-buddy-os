@@ -1,0 +1,1 @@
+CREATE POLICY "super admin write appts" ON public.appointments FOR ALL TO authenticated USING (public.is_super_admin()) WITH CHECK (public.is_super_admin());
