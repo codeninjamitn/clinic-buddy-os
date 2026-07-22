@@ -6,6 +6,7 @@ import { useClinic, formatINR, initials as initialsOf } from "@/lib/auth";
 import { useModals } from "@/lib/modals";
 import { ViewInvoiceModal } from "@/components/modals/ViewInvoiceModal";
 import { CollectPaymentModal } from "@/components/modals/CollectPaymentModal";
+import { ShareInvoiceModal } from "@/components/modals/ShareInvoiceModal";
 import { useRole } from "@/context/RoleContext";
 import type { Invoice, InvoiceStatus } from "@/types/database";
 
@@ -43,13 +44,14 @@ function BillingPage() {
   const [totals, setTotals] = useState({ paid: 0, pending: 0, overdue: 0 });
   const [viewInvoice, setViewInvoice] = useState<Invoice | null>(null);
   const [collectInvoice, setCollectInvoice] = useState<Invoice | null>(null);
+  const [shareInvoice, setShareInvoice] = useState<Invoice | null>(null);
   const canCollect = can("create_invoice");
 
   const load = async () => {
     if (!clinicId) return;
     setLoading(true);
     const [list, paid, pending, overdue] = await Promise.all([
-      supabase.from("invoices").select("*, patients(name), staff(name)").eq("clinic_id", clinicId).order("created_at", { ascending: false }),
+      supabase.from("invoices").select("*, patients(name, phone, email), staff(name)").eq("clinic_id", clinicId).order("created_at", { ascending: false }),
       supabase.from("invoices").select("total").eq("clinic_id", clinicId).eq("status", "Paid"),
       supabase.from("invoices").select("total").eq("clinic_id", clinicId).eq("status", "Pending"),
       supabase.from("invoices").select("total").eq("clinic_id", clinicId).eq("status", "Overdue"),
@@ -150,7 +152,7 @@ function BillingPage() {
                           </button>
                         )}
                         <button onClick={() => setViewInvoice(inv)} className="p-1.5 rounded hover:bg-muted" title="View"><Eye className="w-4 h-4 text-muted-foreground" /></button>
-                        <button className="p-1.5 rounded hover:bg-muted" title="Download"><Download className="w-4 h-4 text-muted-foreground" /></button>
+                        <button onClick={() => setShareInvoice(inv)} className="p-1.5 rounded hover:bg-muted" title="Download / Share"><Download className="w-4 h-4 text-muted-foreground" /></button>
                       </div>
                     </td>
                   </tr>
@@ -195,6 +197,7 @@ function BillingPage() {
         invoice={collectInvoice}
         onSuccess={load}
       />
+      <ShareInvoiceModal isOpen={!!shareInvoice} onClose={() => setShareInvoice(null)} invoice={shareInvoice} />
     </div>
   );
 }
