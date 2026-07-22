@@ -152,7 +152,7 @@ function BillingPage() {
                           </button>
                         )}
                         <button onClick={() => setViewInvoice(inv)} className="p-1.5 rounded hover:bg-muted" title="View"><Eye className="w-4 h-4 text-muted-foreground" /></button>
-                        <button className="p-1.5 rounded hover:bg-muted" title="Download"><Download className="w-4 h-4 text-muted-foreground" /></button>
+                        <button onClick={() => setShareInvoice(inv)} className="p-1.5 rounded hover:bg-muted" title="Download / Share"><Download className="w-4 h-4 text-muted-foreground" /></button>
                       </div>
                     </td>
                   </tr>
