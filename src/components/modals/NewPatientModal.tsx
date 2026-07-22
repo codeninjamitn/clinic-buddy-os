@@ -43,9 +43,14 @@ export function NewPatientModal({ isOpen, onClose, onSuccess }: Props) {
     if (!clinicId) return;
     if (!name.trim() || !phone.trim()) { toast.error("Name and phone are required"); return; }
     setSaving(true);
+    const ageNum = age.trim() ? parseInt(age, 10) : NaN;
+    const dobFromAge =
+      !isNaN(ageNum) && ageNum >= 0 && ageNum <= 130
+        ? `${new Date().getFullYear() - ageNum}-01-01`
+        : null;
     const { error } = await supabase.from("patients").insert({
       clinic_id: clinicId, name, phone,
-      dob: dob || null, gender, blood_group: bloodGroup || null,
+      dob: dobFromAge, gender, blood_group: bloodGroup || null,
       email: email || null, address: address || null,
       known_allergies: allergies || null,
       emergency_contact_name: emergencyName || null,
