@@ -139,7 +139,16 @@ function BillingPage() {
                     <td className="px-4 py-3 text-right font-semibold">{formatINR(Number(inv.total))}</td>
                     <td className="px-4 py-3 text-center">{statusBadge(inv.status)}</td>
                     <td className="px-4 py-3">
-                      <div className="flex justify-end gap-1">
+                      <div className="flex justify-end items-center gap-1">
+                        {canCollect && inv.status !== "Paid" && (
+                          <button
+                            onClick={() => setCollectInvoice(inv)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors"
+                            title="Collect payment"
+                          >
+                            <IndianRupee className="w-3.5 h-3.5" /> Collect
+                          </button>
+                        )}
                         <button onClick={() => setViewInvoice(inv)} className="p-1.5 rounded hover:bg-muted" title="View"><Eye className="w-4 h-4 text-muted-foreground" /></button>
                         <button className="p-1.5 rounded hover:bg-muted" title="Download"><Download className="w-4 h-4 text-muted-foreground" /></button>
                       </div>
