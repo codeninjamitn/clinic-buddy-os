@@ -65,6 +65,15 @@ export function BookAppointmentModal({ isOpen, onClose, onSuccess, prefillPatien
     }
   }, [isOpen, prefillPatientId, prefillPatientName]);
 
+  // Ensure the selected type is always one the clinic actually offers
+  // (specialities may load asynchronously after the modal opens).
+  useEffect(() => {
+    if (!isOpen) return;
+    if (typesForClinic.length && !typesForClinic.includes(type)) {
+      setType(typesForClinic[0]);
+    }
+  }, [isOpen, typesForClinic, type]);
+
   // Load patients + doctors on open
   useEffect(() => {
     if (!isOpen || !clinicId) return;
