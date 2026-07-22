@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import {
   Stethoscope, ArrowRight, Clock, Users, Zap, ShieldCheck, Smartphone,
   Calendar, FlaskConical, Receipt, Package, CheckCircle2, MessageCircle,
 } from "lucide-react";
+import { GetStartedModal } from "@/components/modals/GetStartedModal";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -17,21 +19,24 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
+  const [signupOpen, setSignupOpen] = useState(false);
+  const openSignup = () => setSignupOpen(true);
   return (
     <div className="min-h-screen bg-background text-navy">
-      <Header />
-      <Hero />
+      <Header onGetStarted={openSignup} />
+      <Hero onGetStarted={openSignup} />
       <Trust />
       <Features />
       <PerfectFor />
       <Modules />
-      <CTA />
-      <Footer />
+      <CTA onGetStarted={openSignup} />
+      <Footer onGetStarted={openSignup} />
+      <GetStartedModal isOpen={signupOpen} onClose={() => setSignupOpen(false)} />
     </div>
   );
 }
 
-function Header() {
+function Header({ onGetStarted }: { onGetStarted: () => void }) {
   return (
     <header className="sticky top-0 z-30 bg-background/80 backdrop-blur border-b border-border">
       <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
@@ -53,19 +58,20 @@ function Header() {
           >
             Sign in
           </Link>
-          <Link
-            to="/login"
+          <button
+            type="button"
+            onClick={onGetStarted}
             className="hidden sm:inline-flex items-center gap-1.5 text-sm font-semibold px-3.5 py-2 rounded-md bg-primary text-white hover:bg-primary/90 transition-colors"
           >
             Get started <ArrowRight className="w-4 h-4" />
-          </Link>
+          </button>
         </div>
       </div>
     </header>
   );
 }
 
-function Hero() {
+function Hero({ onGetStarted }: { onGetStarted: () => void }) {
   return (
     <section className="max-w-6xl mx-auto px-5 pt-16 pb-20 md:pt-24 md:pb-28 grid lg:grid-cols-2 gap-12 items-center">
       <div>
@@ -81,12 +87,13 @@ function Hero() {
           independent doctors and diagnostic labs. Start in 5 minutes.
         </p>
         <div className="mt-7 flex flex-wrap gap-3">
-          <Link
-            to="/login"
+          <button
+            type="button"
+            onClick={onGetStarted}
             className="inline-flex items-center gap-2 px-5 py-3 rounded-md bg-primary text-white text-sm font-semibold hover:bg-primary/90 transition-colors"
           >
-            Sign in to dashboard <ArrowRight className="w-4 h-4" />
-          </Link>
+            Get started <ArrowRight className="w-4 h-4" />
+          </button>
           <a
             href="#features"
             className="inline-flex items-center gap-2 px-5 py-3 rounded-md border border-border bg-white text-sm font-semibold hover:border-primary hover:text-primary transition-colors"
@@ -261,21 +268,28 @@ function Modules() {
   );
 }
 
-function CTA() {
+function CTA({ onGetStarted }: { onGetStarted: () => void }) {
   return (
     <section className="py-20">
       <div className="max-w-4xl mx-auto px-5">
         <div className="rounded-2xl bg-gradient-to-br from-primary to-[#026470] text-white p-10 md:p-14 text-center shadow-xl">
           <h2 className="text-3xl md:text-4xl font-bold">Ready when your next patient arrives.</h2>
           <p className="mt-3 text-white/85 max-w-xl mx-auto">
-            Sign in to your ClinicOS dashboard and start managing appointments, patients and billing in minutes.
+            Tell us about your clinic and our team will set it up for you within one business day.
           </p>
-          <div className="mt-7">
-            <Link
-              to="/login"
+          <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={onGetStarted}
               className="inline-flex items-center gap-2 px-6 py-3 rounded-md bg-white text-primary text-sm font-semibold hover:bg-white/90 transition-colors"
             >
-              Sign in to your clinic <ArrowRight className="w-4 h-4" />
+              Get started <ArrowRight className="w-4 h-4" />
+            </button>
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-md border border-white/40 text-white text-sm font-semibold hover:bg-white/10 transition-colors"
+            >
+              Sign in
             </Link>
           </div>
         </div>
@@ -284,7 +298,7 @@ function CTA() {
   );
 }
 
-function Footer() {
+function Footer({ onGetStarted }: { onGetStarted: () => void }) {
   const year = new Date().getFullYear();
   return (
     <footer className="border-t border-border bg-[#F4FAFB]">
@@ -318,7 +332,7 @@ function Footer() {
               <li><a href="#modules" className="text-muted-foreground hover:text-primary transition-colors">Modules</a></li>
               <li><a href="#for" className="text-muted-foreground hover:text-primary transition-colors">Who it's for</a></li>
               <li><Link to="/login" className="text-muted-foreground hover:text-primary transition-colors">Sign in</Link></li>
-              <li><Link to="/login" className="text-muted-foreground hover:text-primary transition-colors">Get started</Link></li>
+              <li><button type="button" onClick={onGetStarted} className="text-muted-foreground hover:text-primary transition-colors text-left">Get started</button></li>
             </ul>
           </div>
 

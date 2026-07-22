@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  LayoutDashboard, Building2, PlusCircle, ActivitySquare, Settings, Bell, ChevronDown, LogOut,
+  LayoutDashboard, Building2, PlusCircle, ActivitySquare, Settings, Bell, ChevronDown, LogOut, Inbox,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { listClinicsWithStats } from "@/lib/superadmin.functions";
@@ -11,8 +11,9 @@ import { AllClinicsPage } from "./AllClinicsPage";
 import { ActivityLogPage } from "./ActivityLogPage";
 import { PlatformSettingsPage } from "./PlatformSettingsPage";
 import { AddClinicWizard } from "./AddClinicWizard";
+import { SignupRequestsPage } from "./SignupRequestsPage";
 
-type Tab = "overview" | "clinics" | "add" | "log" | "settings";
+type Tab = "overview" | "clinics" | "add" | "requests" | "log" | "settings";
 
 export function SuperAdminShell() {
   const [tab, setTab] = useState<Tab>("overview");
@@ -36,6 +37,7 @@ export function SuperAdminShell() {
     { key: "overview", label: "Overview", icon: LayoutDashboard },
     { key: "clinics", label: "All Clinics", icon: Building2 },
     { key: "add", label: "Add Clinic", icon: PlusCircle, accent: true },
+    { key: "requests", label: "Signup Requests", icon: Inbox },
     { key: "log", label: "Activity Log", icon: ActivitySquare },
     { key: "settings", label: "Platform Settings", icon: Settings },
   ];
@@ -116,6 +118,17 @@ export function SuperAdminShell() {
         <main className="flex-1 p-6 max-w-[1500px]">
           {tab === "overview" && <OverviewPage onAdd={() => setWizardOpen(true)} />}
           {tab === "clinics" && <AllClinicsPage onAdd={() => setWizardOpen(true)} />}
+          {tab === "requests" && (
+            <SignupRequestsPage
+              onLaunch={async (r) => {
+                await supabase
+                  .from("clinic_signup_requests")
+                  .update({ status: "contacted", reviewed_at: new Date().toISOString() })
+                  .eq("id", r.id);
+                setWizardOpen(true);
+              }}
+            />
+          )}
           {tab === "log" && <ActivityLogPage />}
           {tab === "settings" && <PlatformSettingsPage />}
         </main>
