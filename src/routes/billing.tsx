@@ -176,6 +176,7 @@ function BillingPage() {
         </div>
       )}
 
+      <ViewInvoiceModal isOpen={!!viewInvoice} onClose={() => setViewInvoice(null)} invoice={viewInvoice} />
     </div>
   );
 }
