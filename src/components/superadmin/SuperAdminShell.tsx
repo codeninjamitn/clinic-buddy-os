@@ -37,6 +37,7 @@ export function SuperAdminShell() {
     { key: "overview", label: "Overview", icon: LayoutDashboard },
     { key: "clinics", label: "All Clinics", icon: Building2 },
     { key: "add", label: "Add Clinic", icon: PlusCircle, accent: true },
+    { key: "requests", label: "Signup Requests", icon: Inbox },
     { key: "log", label: "Activity Log", icon: ActivitySquare },
     { key: "settings", label: "Platform Settings", icon: Settings },
   ];
