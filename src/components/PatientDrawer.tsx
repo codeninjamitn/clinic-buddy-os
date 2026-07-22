@@ -46,7 +46,7 @@ export function PatientDrawer({ patient, onClose }: { patient: Patient | null; o
         .then(({ data }) => { setBills((data as unknown as Invoice[]) ?? []); setLoadingTab(false); });
     } else if (tab === "Prescriptions") {
       setLoadingTab(true);
-      supabase.from("prescriptions").select("id, diagnosis, medicines, notes, follow_up_date, created_at")
+      supabase.from("prescriptions").select("id, diagnosis, symptoms, medicines, notes, follow_up_date, created_at")
         .eq("patient_id", patient.id)
         .order("created_at", { ascending: false })
         .then(({ data }) => { setRxs((data as PrescriptionRow[]) ?? []); setLoadingTab(false); });
@@ -190,6 +190,9 @@ export function PatientDrawer({ patient, onClose }: { patient: Patient | null; o
                             <p className="text-sm font-semibold text-navy">{r.diagnosis ?? "Consultation"}</p>
                             <span className="text-[11px] text-muted-foreground">{new Date(r.created_at).toLocaleDateString("en-IN")}</span>
                           </div>
+                          {r.symptoms && (
+                            <p className="text-xs text-navy/80 mt-1"><span className="font-semibold text-muted-foreground">Symptoms: </span>{r.symptoms}</p>
+                          )}
                           {meds.length > 0 && (
                             <ul className="text-xs text-navy/80 space-y-0.5 mt-1.5">
                               {meds.map((m: any, i: number) => (
