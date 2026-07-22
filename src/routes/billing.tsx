@@ -40,6 +40,7 @@ function BillingPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [totals, setTotals] = useState({ paid: 0, pending: 0, overdue: 0 });
+  const [viewInvoice, setViewInvoice] = useState<Invoice | null>(null);
 
   const load = async () => {
     if (!clinicId) return;
