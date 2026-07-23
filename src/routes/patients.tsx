@@ -6,6 +6,7 @@ import { useClinic, initials as initialsOf, colorFor, ageFromDob } from "@/lib/a
 import { useModals } from "@/lib/modals";
 import { useRole } from "@/context/RoleContext";
 import { PatientDrawer } from "@/components/PatientDrawer";
+import { EditPatientModal } from "@/components/modals/EditPatientModal";
 import type { Patient } from "@/types/database";
 
 export const Route = createFileRoute("/patients")({ component: PatientsPage });
