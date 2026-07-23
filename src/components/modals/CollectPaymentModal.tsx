@@ -41,7 +41,7 @@ export function CollectPaymentModal({ isOpen, onClose, invoice, onSuccess }: Pro
     setSaving(true);
     const { error } = await supabase
       .from("invoices")
-      .update({ status: "Paid", payment_method: method })
+      .update({ status: "Paid", payment_method: method, payment_reference: ref.trim() || null })
       .eq("id", invoice.id);
     setSaving(false);
     if (error) { toast.error(error.message); return; }

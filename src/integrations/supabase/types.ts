@@ -606,6 +606,7 @@ export type Database = {
           line_items: Json | null
           patient_id: string | null
           payment_method: string | null
+          payment_reference: string | null
           status: string | null
           subtotal: number | null
           total: number | null
@@ -621,6 +622,7 @@ export type Database = {
           line_items?: Json | null
           patient_id?: string | null
           payment_method?: string | null
+          payment_reference?: string | null
           status?: string | null
           subtotal?: number | null
           total?: number | null
@@ -636,6 +638,7 @@ export type Database = {
           line_items?: Json | null
           patient_id?: string | null
           payment_method?: string | null
+          payment_reference?: string | null
           status?: string | null
           subtotal?: number | null
           total?: number | null

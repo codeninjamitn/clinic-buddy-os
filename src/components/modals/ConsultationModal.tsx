@@ -44,6 +44,7 @@ export function ConsultationModal({ isOpen, onClose, onSuccess, patientId, patie
   // Selected clinical-assessment tab (defaults to clinic's primary speciality).
   const [tab, setTab] = useState<SpecialitySlug | "none">("none");
   const assessSave = useRef<null | (() => Promise<boolean>)>(null);
+  const prescriptionIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -51,6 +52,7 @@ export function ConsultationModal({ isOpen, onClose, onSuccess, patientId, patie
     const primary = (primarySpeciality?.slug as SpecialitySlug | undefined) ?? "none";
     setTab(primary in ASSESSMENTS ? primary : "none");
     assessSave.current = null;
+    prescriptionIdRef.current = null;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -72,12 +74,17 @@ export function ConsultationModal({ isOpen, onClose, onSuccess, patientId, patie
     if (!diagnosis.trim()) { toast.error("Diagnosis is required"); return; }
     setSaving(true);
     const cleanMeds = meds.filter((m) => m.name.trim());
-    const { error } = await supabase.from("prescriptions").insert({
-      clinic_id: clinic?.id, patient_id: patientId, doctor_id: staffId,
-      diagnosis, symptoms: symptoms.trim() || null, medicines: cleanMeds as unknown as never,
-      notes: notes || null, follow_up_date: followUp || null,
-    } as never);
-    if (error) { setSaving(false); toast.error(error.message); return; }
+    // Only insert the prescription once — on retry after an assessment failure,
+    // reuse the previously created row instead of creating a duplicate.
+    if (!prescriptionIdRef.current) {
+      const { data, error } = await supabase.from("prescriptions").insert({
+        clinic_id: clinic?.id, patient_id: patientId, doctor_id: staffId,
+        diagnosis, symptoms: symptoms.trim() || null, medicines: cleanMeds as unknown as never,
+        notes: notes || null, follow_up_date: followUp || null,
+      } as never).select("id").single();
+      if (error || !data) { setSaving(false); toast.error(error?.message ?? "Failed to save prescription"); return; }
+      prescriptionIdRef.current = (data as { id: string }).id;
+    }
     // Persist the speciality-specific assessment record when a tab has one.
     if (assessSave.current) {
       const ok = await assessSave.current();
