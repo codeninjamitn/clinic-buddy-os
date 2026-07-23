@@ -6,6 +6,7 @@ import { useClinic, initials as initialsOf, colorFor, ageFromDob } from "@/lib/a
 import { useModals } from "@/lib/modals";
 import { useRole } from "@/context/RoleContext";
 import { PatientDrawer } from "@/components/PatientDrawer";
+import { EditPatientModal } from "@/components/modals/EditPatientModal";
 import type { Patient } from "@/types/database";
 
 export const Route = createFileRoute("/patients")({ component: PatientsPage });
@@ -22,6 +23,7 @@ function PatientsPage() {
   const [debounced, setDebounced] = useState("");
   const [filter, setFilter] = useState<Filter>("All");
   const [selected, setSelected] = useState<Patient | null>(null);
+  const [editing, setEditing] = useState<Patient | null>(null);
   const [rows, setRows] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -170,12 +172,15 @@ function PatientsPage() {
                         >
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button
-                          className="p-2 rounded-md hover:bg-[#E1F5EE] text-muted-foreground hover:text-primary transition-colors"
-                          title="Edit"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </button>
+                        {can("register_patient") && (
+                          <button
+                            onClick={() => setEditing(p)}
+                            className="p-2 rounded-md hover:bg-[#E1F5EE] text-muted-foreground hover:text-primary transition-colors"
+                            title="Edit"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -187,6 +192,7 @@ function PatientsPage() {
       </div>
 
       <PatientDrawer patient={selected} onClose={() => setSelected(null)} />
+      <EditPatientModal patient={editing} onClose={() => setEditing(null)} onSuccess={load} />
     </div>
   );
 }
