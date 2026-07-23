@@ -100,6 +100,7 @@ export interface Invoice {
   gst_amount: number;
   total: number;
   payment_method: PaymentMethod | null;
+  payment_reference: string | null;
   status: InvoiceStatus;
   created_at: string;
   patients?: { name: string; phone?: string | null; email?: string | null } | null;
