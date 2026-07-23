@@ -44,6 +44,7 @@ export function ConsultationModal({ isOpen, onClose, onSuccess, patientId, patie
   // Selected clinical-assessment tab (defaults to clinic's primary speciality).
   const [tab, setTab] = useState<SpecialitySlug | "none">("none");
   const assessSave = useRef<null | (() => Promise<boolean>)>(null);
+  const prescriptionIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
