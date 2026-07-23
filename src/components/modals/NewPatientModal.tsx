@@ -30,7 +30,7 @@ export function NewPatientModal({ isOpen, onClose, onSuccess }: Props) {
   useEffect(() => {
     if (!isOpen) return;
     setName(""); setPhone(""); setAge(""); setGender("Male"); setBloodGroup("");
-    setEmail(""); setAddress(""); setAllergies(""); setEmergencyName(""); setEmergencyPhone("");
+    setEmail(""); setAddress(""); setAllergies(""); setEmergencyName(""); setEmergencyPhone(""); setEmergencyRelation("");
   }, [isOpen]);
 
   useEffect(() => {
