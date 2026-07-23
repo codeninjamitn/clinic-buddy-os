@@ -192,6 +192,7 @@ function PatientsPage() {
       </div>
 
       <PatientDrawer patient={selected} onClose={() => setSelected(null)} />
+      <EditPatientModal patient={editing} onClose={() => setEditing(null)} onSuccess={load} />
     </div>
   );
 }
