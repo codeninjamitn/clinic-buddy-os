@@ -833,6 +833,7 @@ export type Database = {
           email: string | null
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
+          emergency_contact_relation: string | null
           gender: string | null
           id: string
           is_active: boolean | null
@@ -852,6 +853,7 @@ export type Database = {
           email?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
+          emergency_contact_relation?: string | null
           gender?: string | null
           id?: string
           is_active?: boolean | null
@@ -871,6 +873,7 @@ export type Database = {
           email?: string | null
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
+          emergency_contact_relation?: string | null
           gender?: string | null
           id?: string
           is_active?: boolean | null
