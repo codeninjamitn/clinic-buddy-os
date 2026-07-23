@@ -172,12 +172,15 @@ function PatientsPage() {
                         >
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button
-                          className="p-2 rounded-md hover:bg-[#E1F5EE] text-muted-foreground hover:text-primary transition-colors"
-                          title="Edit"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </button>
+                        {can("register_patient") && (
+                          <button
+                            onClick={() => setEditing(p)}
+                            className="p-2 rounded-md hover:bg-[#E1F5EE] text-muted-foreground hover:text-primary transition-colors"
+                            title="Edit"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
