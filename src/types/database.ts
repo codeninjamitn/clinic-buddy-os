@@ -64,6 +64,7 @@ export interface Patient {
   current_medications: string | null;
   emergency_contact_name: string | null;
   emergency_contact_phone: string | null;
+  emergency_contact_relation: string | null;
   abdm_health_id: string | null;
   is_active: boolean;
   created_at: string;
