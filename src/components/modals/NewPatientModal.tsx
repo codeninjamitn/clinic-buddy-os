@@ -89,6 +89,23 @@ export function NewPatientModal({ isOpen, onClose, onSuccess }: Props) {
           <Field label="Known allergies" value={allergies} onChange={setAllergies} className="col-span-2" />
           <Field label="Emergency contact name" value={emergencyName} onChange={setEmergencyName} />
           <Field label="Emergency phone" value={emergencyPhone} onChange={setEmergencyPhone} />
+          <div className="col-span-2">
+            <label className="block text-xs font-medium text-muted-foreground mb-1">Relation to patient</label>
+            <select
+              value={emergencyRelation}
+              onChange={(e) => setEmergencyRelation(e.target.value)}
+              className="w-full px-3 py-2 text-sm rounded-md border border-border bg-white"
+            >
+              <option value="">Select relation</option>
+              <option>Spouse</option>
+              <option>Parent</option>
+              <option>Child</option>
+              <option>Sibling</option>
+              <option>Friend</option>
+              <option>Guardian</option>
+              <option>Other</option>
+            </select>
+          </div>
         </div>
         <div className="flex gap-2 mt-5">
           <button onClick={onClose} className="flex-1 py-2.5 rounded-md border border-border text-navy text-sm font-semibold hover:bg-muted">Cancel</button>
