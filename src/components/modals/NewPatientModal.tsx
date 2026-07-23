@@ -56,6 +56,7 @@ export function NewPatientModal({ isOpen, onClose, onSuccess }: Props) {
       known_allergies: allergies || null,
       emergency_contact_name: emergencyName || null,
       emergency_contact_phone: emergencyPhone || null,
+      emergency_contact_relation: emergencyRelation || null,
     });
     setSaving(false);
     if (error) { toast.error(error.message); return; }
