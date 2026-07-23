@@ -23,6 +23,7 @@ function PatientsPage() {
   const [debounced, setDebounced] = useState("");
   const [filter, setFilter] = useState<Filter>("All");
   const [selected, setSelected] = useState<Patient | null>(null);
+  const [editing, setEditing] = useState<Patient | null>(null);
   const [rows, setRows] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
