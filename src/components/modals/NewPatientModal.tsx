@@ -24,6 +24,7 @@ export function NewPatientModal({ isOpen, onClose, onSuccess }: Props) {
   const [allergies, setAllergies] = useState("");
   const [emergencyName, setEmergencyName] = useState("");
   const [emergencyPhone, setEmergencyPhone] = useState("");
+  const [emergencyRelation, setEmergencyRelation] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
