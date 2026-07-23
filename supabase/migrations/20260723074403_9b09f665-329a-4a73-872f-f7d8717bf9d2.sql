@@ -1,0 +1,1 @@
+ALTER TABLE public.patients ADD COLUMN IF NOT EXISTS emergency_contact_relation TEXT;

@@ -123,6 +123,9 @@ export function PatientDrawer({ patient, onClose }: { patient: Patient | null; o
                   {(patient.emergency_contact_name || patient.emergency_contact_phone) && (
                     <Section title="Emergency Contact">
                       <Row icon={Phone} label={patient.emergency_contact_name ?? "Contact"} value={patient.emergency_contact_phone ?? "—"} />
+                      {patient.emergency_contact_relation && (
+                        <Row icon={Phone} label="Relation" value={patient.emergency_contact_relation} />
+                      )}
                     </Section>
                   )}
                   <Section title="Known Allergies">
