@@ -52,6 +52,7 @@ export function ConsultationModal({ isOpen, onClose, onSuccess, patientId, patie
     const primary = (primarySpeciality?.slug as SpecialitySlug | undefined) ?? "none";
     setTab(primary in ASSESSMENTS ? primary : "none");
     assessSave.current = null;
+    prescriptionIdRef.current = null;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
